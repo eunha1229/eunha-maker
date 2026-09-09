@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Abyssal Orbit — 메인트 카드 메이커</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">ABYSSAL ORBIT</p>
+      <h1>메인트 카드 메이커</h1>
+    </div>
+    <div class="top-actions">
+      <button class="ghost" id="exportJson">작업 파일 저장</button>
+      <label class="ghost file-label">작업 파일 불러오기<input id="importJson" type="file" accept=".json,application/json"></label>
+      <button class="primary" id="downloadPng">PNG 저장</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="panel controls">
+      <section>
+        <h2>기본 정보</h2>
+        <label>닉네임<input id="nickname" placeholder="닉네임"></label>
+        <label>X 아이디<input id="twitter" placeholder="@twitter_id"></label>
+        <label>한 줄 소개<input id="tagline" placeholder="별과 바다 사이를 유영하는 계정"></label>
+        <label>소개<textarea id="about" rows="5" placeholder="계정 소개 / 성향 / 덧붙이고 싶은 이야기"></textarea></label>
+        <label>주의사항<textarea id="notice" rows="4" placeholder="주의사항이나 NG"></textarea></label>
+      </section>
+
+      <section>
+        <h2>프로필 이미지</h2>
+        <label class="filebox">이미지 선택<input id="avatarInput" type="file" accept="image/*"></label>
+      </section>
+
+      <section>
+        <h2>태그</h2>
+        <div class="inline">
+          <input id="tagInput" placeholder="예: #성인 #느긋한교류">
+          <button id="addTag">추가</button>
+        </div>
+        <div id="tagEditor" class="chip-editor"></div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div>
+            <h2>페어</h2>
+            <p>세 타입을 자유롭게 섞어 배치할 수 있어요.</p>
+          </div>
+        </div>
+        <div class="pair-buttons">
+          <button data-add-pair="hero">＋ 헤더형 · 대</button>
+          <button data-add-pair="card">＋ 카드형 · 중</button>
+          <button data-add-pair="text">＋ 글자 only · 소</button>
+        </div>
+        <div id="pairEditor" class="pair-editor"></div>
+      </section>
+
+      <section>
+        <h2>테마</h2>
+        <div class="theme-grid">
+          <label>별빛<input id="accent1" type="color" value="#8aa9ff"></label>
+          <label>심해빛<input id="accent2" type="color" value="#56d7d1"></label>
+        </div>
+        <label>카드 제목<input id="cardTitle" value="orbit://profile.log"></label>
+      </section>
+    </aside>
+
+    <section class="preview-wrap">
+      <div class="preview-toolbar">
+        <span>PREVIEW</span>
+        <span>PNG는 아래 카드 영역만 저장됩니다.</span>
+      </div>
+
+      <article id="card" class="profile-card">
+        <div class="stars"></div>
+        <div class="surface-glow"></div>
+
+        <header class="card-header">
+          <div class="window-dots"><i></i><i></i><i></i></div>
+          <span id="pCardTitle">orbit://profile.log</span>
+          <span class="signal">◌ ONLINE</span>
+        </header>
+
+        <section class="identity">
+          <div class="avatar-shell">
+            <img id="pAvatar" alt="" />
+            <div id="avatarFallback">✦</div>
+          </div>
+          <div class="identity-copy">
+            <p class="micro">SIGNAL RECEIVED FROM</p>
+            <h2 id="pNickname">YOUR NAME</h2>
+            <p id="pTwitter">@twitter_id</p>
+            <p id="pTagline" class="tagline">별과 바다 사이를 유영하는 계정</p>
+          </div>
+        </section>
+
+        <div id="pTags" class="chips"></div>
+
+        <section class="info-grid">
+          <div class="info-box">
+            <p class="section-label">ABOUT / LOG 01</p>
+            <p id="pAbout" class="preline muted">소개를 입력해 주세요.</p>
+          </div>
+          <div class="info-box">
+            <p class="section-label">CAUTION / LOG 02</p>
+            <p id="pNotice" class="preline muted">주의사항을 입력해 주세요.</p>
+          </div>
+        </section>
+
+        <section class="pair-section">
+          <div class="pair-title-row">
+            <div>
+              <p class="micro">CONSTELLATION / CURRENT LINKS</p>
+              <h3>PAIR ARCHIVE</h3>
+            </div>
+            <span class="orbit-mark">◉</span>
+          </div>
+          <div id="pPairs" class="pairs"></div>
+          <div id="emptyPairs" class="empty-pairs">아직 기록된 페어가 없습니다.</div>
+        </section>
+
+        <footer>
+          <span>ABYSSAL ORBIT DATABASE</span>
+          <span>✦ ｡˚ ◌</span>
+        </footer>
+      </article>
+    </section>
+  </main>
+
+  <template id="pairEditorTemplate">
+    <div class="pair-edit-item">
+      <div class="pair-edit-top">
+        <strong class="pair-kind"></strong>
+        <div>
+          <button class="mini move-up" title="위로">↑</button>
+          <button class="mini move-down" title="아래로">↓</button>
+          <button class="mini danger remove-pair">삭제</button>
+        </div>
+      </div>
+      <label>이름<input class="pair-name" placeholder="페어 이름"></label>
+      <label>설명<textarea class="pair-desc" rows="3" placeholder="관계 / 소개 / 한마디"></textarea></label>
+      <label class="pair-image-row">이미지 <input class="pair-image" type="file" accept="image/*"></label>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
