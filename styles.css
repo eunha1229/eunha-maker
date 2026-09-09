@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700;800&family=Noto+Serif+KR:wght@400;600;700&display=swap");
 *{box-sizing:border-box} :root{
   --bg:#050915;--panel:#0b1222;--line:rgba(255,255,255,.11);--text:#eef4ff;--muted:#9eabc4;
-  --a1:#8aa9ff;--a2:#56d7d1;--card-bg:#07101f;--star-color:#dce8ff;--shadow:0 24px 80px rgba(0,0,0,.35)
+  --a1:#8aa9ff;--a2:#56d7d1;--card-bg:#07101f;--card-text:#eef4ff;--star-color:#dce8ff;--shadow:0 24px 80px rgba(0,0,0,.35)
 }
 html,body{margin:0;height:100%;font-family:Inter,Pretendard,"Noto Sans KR",system-ui,sans-serif;background:
 radial-gradient(circle at 18% 10%,rgba(87,116,255,.12),transparent 28%),
@@ -98,3 +98,66 @@ linear-gradient(180deg,transparent 45%,color-mix(in srgb,var(--card-bg) 82%,tran
 .preset-grid button{border:1px solid var(--line);background:#0e1728;color:var(--text);border-radius:9px;padding:8px 9px;font-size:11px}
 .preset-grid button:hover{border-color:var(--a1);background:color-mix(in srgb,var(--a1) 10%,#0e1728)}
 .preset-grid button.active{border-color:var(--a2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--a2) 30%,transparent)}
+
+/* v8 light/dark adaptive card colors */
+.profile-card{
+  --card-line:color-mix(in srgb,var(--card-text) 18%,transparent);
+  --card-line-soft:color-mix(in srgb,var(--card-text) 10%,transparent);
+  --card-muted:color-mix(in srgb,var(--card-text) 72%,transparent);
+  --card-soft:color-mix(in srgb,var(--card-text) 55%,transparent);
+  color:var(--card-text)!important;
+  border-color:var(--card-line)!important;
+}
+.profile-card .identity-copy h2,
+.profile-card .identity-copy>p,
+.profile-card .tagline,
+.profile-card .preline,
+.profile-card .pair-name-out,
+.profile-card .pair-desc-out,
+.profile-card .empty-pairs,
+.profile-card footer,
+.profile-card .card-header{
+  color:var(--card-text);
+}
+.profile-card .tagline,
+.profile-card .muted,
+.profile-card .pair-desc-out,
+.profile-card .empty-pairs{
+  color:var(--card-muted)!important;
+}
+.profile-card .identity-copy>p:nth-of-type(2),
+.profile-card .section-label,
+.profile-card .tag-group-label,
+.profile-card .pair-title-row h3{
+  color:var(--a1)!important;
+}
+.profile-card .micro{color:var(--a2)!important}
+.profile-card .card-header,
+.profile-card .pair-section,
+.profile-card footer{
+  border-color:var(--card-line)!important;
+}
+.profile-card .info-box,
+.profile-card .pair-hero,
+.profile-card .pair-card,
+.profile-card .empty-pairs{
+  border-color:var(--card-line)!important;
+}
+.profile-card .info-box,
+.profile-card .pair-card{
+  background:color-mix(in srgb,var(--card-text) 4%,transparent)!important;
+}
+.profile-card .pair-text{
+  border-color:var(--card-line)!important;
+}
+.profile-card .chip{
+  color:var(--card-text)!important;
+  border-color:color-mix(in srgb,var(--a1) 42%,transparent)!important;
+  background:color-mix(in srgb,var(--a1) 10%,transparent)!important;
+}
+.profile-card .avatar-shell:after{
+  border-color:color-mix(in srgb,var(--a1) 38%,transparent)!important;
+}
+.profile-card .window-dots i{background:var(--a1)!important}
+.profile-card .signal{color:var(--a2)!important}
+.profile-card .creator-credit{color:var(--a2)!important}

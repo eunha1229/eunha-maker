@@ -7,7 +7,7 @@ const state = {
   fontChoice: "pretendard",
   fontScale: "normal",
   accent1: "#8aa9ff", accent2: "#56d7d1",
-  cardBg: "#07101f", starColor: "#dce8ff",
+  cardBg: "#07101f", cardText: "#eef4ff", starColor: "#dce8ff",
   avatar: "", tags: [], pairs: []
 };
 
@@ -28,43 +28,50 @@ const themePresets = {
     accent1:"#8098ff",
     accent2:"#4fd3cf",
     cardBg:"#07101f",
+    cardText:"#eef4ff",
     starColor:"#dce8ff"
   },
   aurora: {
-    accent1:"#b38cff",
-    accent2:"#6ee7c7",
-    cardBg:"#0c1020",
-    starColor:"#d9fff3"
+    accent1:"#8a67d6",
+    accent2:"#50bfa5",
+    cardBg:"#eef7f4",
+    cardText:"#263244",
+    starColor:"#8aa6bf"
   },
   monochrome: {
-    accent1:"#bfc5cf",
-    accent2:"#8f97a3",
-    cardBg:"#0e1014",
-    starColor:"#e8ebef"
+    accent1:"#5f6670",
+    accent2:"#8a9098",
+    cardBg:"#f2f2f0",
+    cardText:"#24262a",
+    starColor:"#a6a8ab"
   },
   spring: {
-    accent1:"#d8a8d8",
-    accent2:"#b8d9b3",
-    cardBg:"#19141c",
-    starColor:"#fff0f6"
+    accent1:"#c56f9f",
+    accent2:"#78a977",
+    cardBg:"#fff4f7",
+    cardText:"#4b3b46",
+    starColor:"#d6aabd"
   },
   summer: {
-    accent1:"#7db7ff",
-    accent2:"#6fd6c7",
-    cardBg:"#081726",
-    starColor:"#e3f6ff"
+    accent1:"#3f87c7",
+    accent2:"#3aaea3",
+    cardBg:"#eaf8fb",
+    cardText:"#173a49",
+    starColor:"#79aebf"
   },
   autumn: {
-    accent1:"#d28a5d",
-    accent2:"#b79a62",
-    cardBg:"#1b120e",
-    starColor:"#f2dbc1"
+    accent1:"#b8643f",
+    accent2:"#9b7b45",
+    cardBg:"#fbf1e3",
+    cardText:"#4b3327",
+    starColor:"#c5a27e"
   },
   winter: {
-    accent1:"#9eb9ff",
-    accent2:"#b7d8ef",
-    cardBg:"#0b1320",
-    starColor:"#f4f8ff"
+    accent1:"#6e87c8",
+    accent2:"#87b5cf",
+    cardBg:"#f4f8fd",
+    cardText:"#26354a",
+    starColor:"#9bb3cc"
   }
 };
 
@@ -74,11 +81,13 @@ function applyPreset(name){
   state.accent1=p.accent1;
   state.accent2=p.accent2;
   state.cardBg=p.cardBg;
+  state.cardText=p.cardText;
   state.starColor=p.starColor;
 
   $("#accent1").value=p.accent1;
   $("#accent2").value=p.accent2;
   $("#cardBg").value=p.cardBg;
+  $("#cardText").value=p.cardText;
   $("#starColor").value=p.starColor;
 
   $$(".preset-grid button").forEach(btn=>{
@@ -110,6 +119,7 @@ function clearPresetActive(){ $$(".preset-grid button").forEach(btn=>btn.classLi
 $("#accent1").addEventListener("input", e=>{state.accent1=e.target.value; clearPresetActive(); renderPreview();});
 $("#accent2").addEventListener("input", e=>{state.accent2=e.target.value; clearPresetActive(); renderPreview();});
 $("#cardBg").addEventListener("input", e=>{state.cardBg=e.target.value; clearPresetActive(); renderPreview();});
+$("#cardText").addEventListener("input", e=>{state.cardText=e.target.value; clearPresetActive(); renderPreview();});
 $("#starColor").addEventListener("input", e=>{state.starColor=e.target.value; clearPresetActive(); renderPreview();});
 $("#avatarInput").addEventListener("change", async e=>{
   const f=e.target.files[0]; if(!f)return; state.avatar=await readFile(f); renderPreview();
@@ -196,6 +206,7 @@ function renderPreview(){
   document.documentElement.style.setProperty("--a1",state.accent1);
   document.documentElement.style.setProperty("--a2",state.accent2);
   document.documentElement.style.setProperty("--card-bg",state.cardBg||"#07101f");
+  document.documentElement.style.setProperty("--card-text",state.cardText||"#eef4ff");
   document.documentElement.style.setProperty("--star-color",state.starColor||"#dce8ff");
   $("#pNickname").textContent=state.nickname||"YOUR NAME";
   $("#pTwitter").textContent=state.twitter||"@twitter_id";
@@ -252,7 +263,7 @@ $("#importJson").addEventListener("change",async e=>{
   }catch{alert("올바른 작업 파일이 아니에요.");}
 });
 function syncControls(){
-  ["nickname","twitter","tagline","about","notice","cardTitle","fontChoice","fontScale","accent1","accent2","cardBg","starColor"].forEach(k=>{
+  ["nickname","twitter","tagline","about","notice","cardTitle","fontChoice","fontScale","accent1","accent2","cardBg","cardText","starColor"].forEach(k=>{
     const el=$("#"+k); if(el && state[k]!=null) el.value=state[k];
   });
 }
