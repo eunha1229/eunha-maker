@@ -221,7 +221,7 @@ function renderPreview(){
   const img=$("#pAvatar"), fb=$("#avatarFallback");
   if(state.avatar){img.src=state.avatar;img.style.display="block";fb.style.display="none";}else{img.removeAttribute("src");img.style.display="none";fb.style.display="grid";}
   normalizeTags();
-  ["platform","account","dream"].forEach(cat=>{
+  ["platform","account","dream","genre"].forEach(cat=>{
     const row=$(`[data-tag-group="${cat}"]`);
     const chips=$(".tag-group-chips",row);
     const items=state.tags.filter(t=>t.category===cat);
