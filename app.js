@@ -45,15 +45,31 @@ $("#avatarInput").addEventListener("change", async e=>{
 
 $("#addTag").addEventListener("click", addTag);
 $("#tagInput").addEventListener("keydown", e=>{ if(e.key==="Enter"){e.preventDefault();addTag();}});
+function normalizeTags(){
+  state.tags = (state.tags || []).map((t, i)=>{
+    if(typeof t === "string"){
+      const defaults=["platform","account","dream"];
+      return {text:t, category:defaults[i%3]};
+    }
+    return {text:t.text||"", category:t.category||"platform"};
+  }).filter(t=>t.text);
+}
 function addTag(){
   const el=$("#tagInput"), v=el.value.trim(); if(!v)return;
-  state.tags.push(v); el.value=""; renderTagEditor(); renderPreview();
+  const category=$("#tagCategory").value || "platform";
+  state.tags.push({text:v, category});
+  el.value="";
+  renderTagEditor();
+  renderPreview();
 }
 function renderTagEditor(){
+  normalizeTags();
   const box=$("#tagEditor"); box.innerHTML="";
   state.tags.forEach((t,i)=>{
-    const d=document.createElement("span"); d.className="chip-edit";
-    d.innerHTML=`${esc(t)} <button data-i="${i}">×</button>`;
+    const d=document.createElement("span");
+    d.className="chip-edit";
+    d.dataset.cat=t.category;
+    d.innerHTML=`${esc(t.text)} <small>${t.category.toUpperCase()}</small> <button data-i="${i}">×</button>`;
     d.querySelector("button").onclick=()=>{state.tags.splice(i,1);renderTagEditor();renderPreview();};
     box.appendChild(d);
   });
@@ -119,7 +135,14 @@ function renderPreview(){
   card.classList.add("size-"+(state.fontScale||"normal"));
   const img=$("#pAvatar"), fb=$("#avatarFallback");
   if(state.avatar){img.src=state.avatar;img.style.display="block";fb.style.display="none";}else{img.removeAttribute("src");img.style.display="none";fb.style.display="grid";}
-  $("#pTags").innerHTML=state.tags.map(t=>`<span class="chip">${esc(t)}</span>`).join("");
+  normalizeTags();
+  ["platform","account","dream"].forEach(cat=>{
+    const row=$(`[data-tag-group="${cat}"]`);
+    const chips=$(".tag-group-chips",row);
+    const items=state.tags.filter(t=>t.category===cat);
+    chips.innerHTML=items.map(t=>`<span class="chip">${esc(t.text)}</span>`).join("");
+    row.style.display=items.length ? "grid" : "none";
+  });
   $("#pPairs").innerHTML=state.pairs.map(pairHtml).join("");
   $("#emptyPairs").style.display=state.pairs.length?"none":"block";
 }

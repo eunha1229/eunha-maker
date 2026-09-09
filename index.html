@@ -39,8 +39,13 @@
 
       <section>
         <h2>태그</h2>
-        <div class="inline">
-          <input id="tagInput" placeholder="예: #성인 #느긋한교류">
+        <div class="tag-add-row">
+          <select id="tagCategory" aria-label="태그 카테고리">
+            <option value="platform">PLATFORM</option>
+            <option value="account">ACCOUNT</option>
+            <option value="dream">DREAM</option>
+          </select>
+          <input id="tagInput" placeholder="태그 입력">
           <button id="addTag">추가</button>
         </div>
         <div id="tagEditor" class="chip-editor"></div>
@@ -117,15 +122,28 @@
           </div>
         </section>
 
-        <div id="pTags" class="chips"></div>
+        <section id="pTags" class="tag-groups">
+          <div class="tag-line" data-tag-group="platform">
+            <span class="tag-group-label">✦PLATFORM</span>
+            <div class="tag-group-chips"></div>
+          </div>
+          <div class="tag-line" data-tag-group="account">
+            <span class="tag-group-label">✦ACCOUNT</span>
+            <div class="tag-group-chips"></div>
+          </div>
+          <div class="tag-line" data-tag-group="dream">
+            <span class="tag-group-label">✦DREAM</span>
+            <div class="tag-group-chips"></div>
+          </div>
+        </section>
 
         <section class="info-grid">
           <div class="info-box">
-            <p class="section-label">ABOUT</p>
+            <p class="section-label">✦ABOUT</p>
             <p id="pAbout" class="preline muted">소개를 입력해 주세요.</p>
           </div>
           <div class="info-box">
-            <p class="section-label">CAUTION</p>
+            <p class="section-label">✦NG</p>
             <p id="pNotice" class="preline muted">주의사항을 입력해 주세요.</p>
           </div>
         </section>
