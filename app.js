@@ -7,6 +7,7 @@ const state = {
   fontChoice: "pretendard",
   fontScale: "normal",
   accent1: "#8aa9ff", accent2: "#56d7d1",
+  cardBg: "#07101f", starColor: "#dce8ff",
   avatar: "", tags: [], pairs: []
 };
 
@@ -39,6 +40,8 @@ $("#fontScale").addEventListener("change", e=>{
 
 $("#accent1").addEventListener("input", e=>{state.accent1=e.target.value; renderPreview();});
 $("#accent2").addEventListener("input", e=>{state.accent2=e.target.value; renderPreview();});
+$("#cardBg").addEventListener("input", e=>{state.cardBg=e.target.value; renderPreview();});
+$("#starColor").addEventListener("input", e=>{state.starColor=e.target.value; renderPreview();});
 $("#avatarInput").addEventListener("change", async e=>{
   const f=e.target.files[0]; if(!f)return; state.avatar=await readFile(f); renderPreview();
 });
@@ -123,6 +126,8 @@ async function ensureSelectedFontReady(){
 function renderPreview(){
   document.documentElement.style.setProperty("--a1",state.accent1);
   document.documentElement.style.setProperty("--a2",state.accent2);
+  document.documentElement.style.setProperty("--card-bg",state.cardBg||"#07101f");
+  document.documentElement.style.setProperty("--star-color",state.starColor||"#dce8ff");
   $("#pNickname").textContent=state.nickname||"YOUR NAME";
   $("#pTwitter").textContent=state.twitter||"@twitter_id";
   $("#pTagline").textContent=state.tagline||"별과 바다 사이를 유영하는 계정";
@@ -178,7 +183,7 @@ $("#importJson").addEventListener("change",async e=>{
   }catch{alert("올바른 작업 파일이 아니에요.");}
 });
 function syncControls(){
-  ["nickname","twitter","tagline","about","notice","cardTitle","fontChoice","fontScale","accent1","accent2"].forEach(k=>{
+  ["nickname","twitter","tagline","about","notice","cardTitle","fontChoice","fontScale","accent1","accent2","cardBg","starColor"].forEach(k=>{
     const el=$("#"+k); if(el && state[k]!=null) el.value=state[k];
   });
 }
