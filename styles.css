@@ -192,9 +192,10 @@ color-mix(in srgb,var(--card-bg) 82%,var(--a2) 18%)
   background:color-mix(in srgb,var(--card-bg) 95%,var(--card-text) 5%)!important;
 }
 .profile-card .pair-text{
-  background:color-mix(in srgb,var(--card-bg) 97%,var(--card-text) 3%)!important;
-  border:1px solid var(--card-line)!important;
-  border-radius:12px;
+  background:transparent!important;
+  border:0!important;
+  border-bottom:1px dashed var(--card-line)!important;
+  border-radius:0!important;
 }
 .profile-card .pair-card .pair-image-box{
   background:
@@ -214,4 +215,13 @@ color-mix(in srgb,var(--card-bg) 82%,var(--a2) 18%)
 .profile-card .pair-hero .pair-name-out,
 .profile-card .pair-hero .pair-desc-out{
   text-shadow:none;
+}
+
+/* v10: text-only pair returns to the original unboxed style */
+.profile-card .pair-text{
+  min-height:72px;
+  padding:13px 8px 14px!important;
+}
+.profile-card .pair-text .pair-name-out{
+  margin-bottom:5px;
 }
