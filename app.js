@@ -5,6 +5,7 @@ const state = {
   nickname: "", twitter: "", tagline: "", about: "", notice: "",
   cardTitle: "orbit://profile.log",
   fontChoice: "pretendard",
+  fontScale: "normal",
   accent1: "#8aa9ff", accent2: "#56d7d1",
   avatar: "", tags: [], pairs: []
 };
@@ -29,6 +30,10 @@ $("#fontChoice").addEventListener("change", async e=>{
   state.fontChoice=e.target.value;
   renderPreview();
   await ensureSelectedFontReady();
+  renderPreview();
+});
+$("#fontScale").addEventListener("change", e=>{
+  state.fontScale=e.target.value;
   renderPreview();
 });
 
@@ -109,8 +114,9 @@ function renderPreview(){
   $("#pNotice").textContent=state.notice||"주의사항을 입력해 주세요.";
   $("#pCardTitle").textContent=state.cardTitle||"orbit://profile.log";
   const card=$("#card");
-  [...card.classList].filter(c=>c.startsWith("font-")).forEach(c=>card.classList.remove(c));
+  [...card.classList].filter(c=>c.startsWith("font-")||c.startsWith("size-")).forEach(c=>card.classList.remove(c));
   card.classList.add("font-"+(state.fontChoice||"pretendard"));
+  card.classList.add("size-"+(state.fontScale||"normal"));
   const img=$("#pAvatar"), fb=$("#avatarFallback");
   if(state.avatar){img.src=state.avatar;img.style.display="block";fb.style.display="none";}else{img.removeAttribute("src");img.style.display="none";fb.style.display="grid";}
   $("#pTags").innerHTML=state.tags.map(t=>`<span class="chip">${esc(t)}</span>`).join("");
@@ -149,7 +155,7 @@ $("#importJson").addEventListener("change",async e=>{
   }catch{alert("올바른 작업 파일이 아니에요.");}
 });
 function syncControls(){
-  ["nickname","twitter","tagline","about","notice","cardTitle","fontChoice","accent1","accent2"].forEach(k=>{
+  ["nickname","twitter","tagline","about","notice","cardTitle","fontChoice","fontScale","accent1","accent2"].forEach(k=>{
     const el=$("#"+k); if(el && state[k]!=null) el.value=state[k];
   });
 }
