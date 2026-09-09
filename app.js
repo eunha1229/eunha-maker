@@ -8,7 +8,8 @@ const state = {
   fontScale: "normal",
   accent1: "#8aa9ff", accent2: "#56d7d1",
   cardBg: "#07101f", cardText: "#eef4ff", starColor: "#dce8ff",
-  avatar: "", tags: [], pairs: []
+  avatar: "", tags: [], pairs: [],
+  showBasic: true, showTags: true, showInfo: true, showPairs: true
 };
 
 const typeNames = { hero:"헤더형 · 대", card:"카드형 · 중", text:"글자 only · 소" };
@@ -258,6 +259,17 @@ function setSafeThemeVars(){
   root.setProperty("--pair-image-2",mixHex(bg,a2,.18));
 }
 
+
+["showBasic","showTags","showInfo","showPairs"].forEach(key=>{
+  const el=$("#"+key);
+  if(el){
+    el.addEventListener("change",()=>{
+      state[key]=el.checked;
+      renderPreview();
+    });
+  }
+});
+
 function renderPreview(){
   document.documentElement.style.setProperty("--a1",state.accent1);
   document.documentElement.style.setProperty("--a2",state.accent2);
@@ -271,6 +283,12 @@ function renderPreview(){
   $("#pAbout").textContent=state.about||"소개를 입력해 주세요.";
   $("#pNotice").textContent=state.notice||"주의사항을 입력해 주세요.";
   $("#pCardTitle").textContent=state.cardTitle||"orbit://profile.log";
+
+  $("#pBasic").hidden = state.showBasic === false;
+  $("#pTags").hidden = state.showTags === false;
+  $("#pInfo").hidden = state.showInfo === false;
+  $("#pPairSection").hidden = state.showPairs === false;
+
   const card=$("#card");
   [...card.classList].filter(c=>c.startsWith("font-")||c.startsWith("size-")).forEach(c=>card.classList.remove(c));
   card.classList.add("font-"+(state.fontChoice||"pretendard"));
@@ -332,13 +350,20 @@ $("#exportJson").addEventListener("click",()=>{
 $("#importJson").addEventListener("change",async e=>{
   const f=e.target.files[0]; if(!f)return;
   try{
-    const data=JSON.parse(await f.text()); Object.assign(state,data);
+    const data=JSON.parse(await f.text());
+    Object.assign(state,data);
+    ["showBasic","showTags","showInfo","showPairs"].forEach(k=>{
+      if(typeof state[k] !== "boolean") state[k]=true;
+    });
     syncControls(); renderTagEditor(); renderPairEditor(); renderPreview();
   }catch{alert("올바른 작업 파일이 아니에요.");}
 });
 function syncControls(){
   ["nickname","twitter","tagline","about","notice","cardTitle","fontChoice","fontScale","accent1","accent2","cardBg","cardText","starColor"].forEach(k=>{
     const el=$("#"+k); if(el && state[k]!=null) el.value=state[k];
+  });
+  ["showBasic","showTags","showInfo","showPairs"].forEach(k=>{
+    const el=$("#"+k); if(el) el.checked=state[k] !== false;
   });
 }
 syncControls();renderTagEditor();renderPairEditor();renderPreview();

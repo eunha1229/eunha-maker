@@ -230,3 +230,80 @@ var(--pair-image-2)
 .profile-card .pair-text .pair-name-out{
   margin-bottom:5px;
 }
+
+
+/* v14 — preview block visibility controls */
+.visibility-panel{
+  border-color:rgba(255,255,255,.10);
+}
+.visibility-panel .section-head{
+  margin-bottom:10px;
+}
+.visibility-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.visibility-toggle{
+  position:relative;
+  display:flex!important;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-height:42px;
+  padding:9px 10px!important;
+  margin:0!important;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  background:rgba(255,255,255,.025);
+  cursor:pointer;
+  user-select:none;
+}
+.visibility-toggle > span{
+  font-size:12px;
+  line-height:1.25;
+}
+.visibility-toggle input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.visibility-toggle i{
+  position:relative;
+  flex:0 0 auto;
+  width:34px;
+  height:20px;
+  border-radius:999px;
+  background:rgba(255,255,255,.13);
+  border:1px solid rgba(255,255,255,.12);
+  transition:.18s ease;
+}
+.visibility-toggle i::after{
+  content:"";
+  position:absolute;
+  width:14px;
+  height:14px;
+  left:2px;
+  top:2px;
+  border-radius:50%;
+  background:#d7deeb;
+  transition:.18s ease;
+}
+.visibility-toggle input:checked + i{
+  background:var(--a1);
+  border-color:var(--a1);
+}
+.visibility-toggle input:checked + i::after{
+  transform:translateX(14px);
+  background:#fff;
+}
+.visibility-toggle:has(input:focus-visible){
+  outline:2px solid var(--a1);
+  outline-offset:2px;
+}
+.profile-card [hidden]{
+  display:none!important;
+}
+@media (max-width:560px){
+  .visibility-grid{grid-template-columns:1fr;}
+}
