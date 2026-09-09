@@ -202,12 +202,69 @@ async function ensureSelectedFontReady(){
   };
   try{ await document.fonts.load(families[state.fontChoice]||families["pretendard"]); }catch(e){}
 }
+
+function hexToRgb(hex){
+  let h=(hex||"").replace("#","").trim();
+  if(h.length===3) h=h.split("").map(x=>x+x).join("");
+  const n=parseInt(h,16);
+  if(Number.isNaN(n)) return {r:0,g:0,b:0};
+  return {r:(n>>16)&255,g:(n>>8)&255,b:n&255};
+}
+function rgba(hex,a){
+  const {r,g,b}=hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
+function mixHex(hex1,hex2,t){
+  const a=hexToRgb(hex1), b=hexToRgb(hex2);
+  const c={
+    r:Math.round(a.r+(b.r-a.r)*t),
+    g:Math.round(a.g+(b.g-a.g)*t),
+    b:Math.round(a.b+(b.b-a.b)*t)
+  };
+  return `rgb(${c.r}, ${c.g}, ${c.b})`;
+}
+function setSafeThemeVars(){
+  const root=document.documentElement.style;
+  const bg=state.cardBg||"#07101f";
+  const text=state.cardText||"#eef4ff";
+  const a1=state.accent1||"#8aa9ff";
+  const a2=state.accent2||"#56d7d1";
+  const star=state.starColor||"#dce8ff";
+
+  root.setProperty("--card-bg-top",mixHex(bg,"#ffffff",.06));
+  root.setProperty("--card-line",rgba(text,.18));
+  root.setProperty("--card-line-soft",rgba(text,.10));
+  root.setProperty("--card-muted",rgba(text,.72));
+  root.setProperty("--card-soft",rgba(text,.55));
+
+  root.setProperty("--surface-1",mixHex(bg,text,.04));
+  root.setProperty("--surface-2",mixHex(bg,text,.08));
+  root.setProperty("--surface-3",rgba(bg,.82));
+
+  root.setProperty("--a1-soft",rgba(a1,.10));
+  root.setProperty("--a1-line",rgba(a1,.42));
+  root.setProperty("--a1-glow",rgba(a1,.14));
+  root.setProperty("--a2-glow",rgba(a2,.14));
+
+  root.setProperty("--star-74",rgba(star,.74));
+  root.setProperty("--star-46",rgba(star,.46));
+  root.setProperty("--star-58",rgba(star,.58));
+  root.setProperty("--star-48",rgba(star,.48));
+  root.setProperty("--star-43",rgba(star,.43));
+
+  root.setProperty("--hero-grad-42",rgba(a1,.42));
+  root.setProperty("--hero-grad-18",rgba(a1,.18));
+  root.setProperty("--pair-image-1",mixHex(bg,a1,.24));
+  root.setProperty("--pair-image-2",mixHex(bg,a2,.18));
+}
+
 function renderPreview(){
   document.documentElement.style.setProperty("--a1",state.accent1);
   document.documentElement.style.setProperty("--a2",state.accent2);
   document.documentElement.style.setProperty("--card-bg",state.cardBg||"#07101f");
   document.documentElement.style.setProperty("--card-text",state.cardText||"#eef4ff");
   document.documentElement.style.setProperty("--star-color",state.starColor||"#dce8ff");
+  setSafeThemeVars();
   $("#pNickname").textContent=state.nickname||"YOUR NAME";
   $("#pTwitter").textContent=state.twitter||"@twitter_id";
   $("#pTagline").textContent=state.tagline||"별과 바다 사이를 유영하는 계정";
@@ -237,16 +294,33 @@ $("#downloadPng").addEventListener("click", async ()=>{
   try{
     await ensureSelectedFontReady();
     await document.fonts.ready;
-    const canvas=await html2canvas($("#card"),{
-      scale:2.5, backgroundColor:null, useCORS:true, logging:false,
-      imageTimeout:0
+    const cardEl=$("#card");
+    setSafeThemeVars();
+    const canvas=await html2canvas(cardEl,{
+      scale:2,
+      backgroundColor:null,
+      useCORS:true,
+      allowTaint:false,
+      logging:false,
+      imageTimeout:15000,
+      width:cardEl.scrollWidth,
+      height:cardEl.scrollHeight,
+      windowWidth:Math.max(document.documentElement.clientWidth, cardEl.scrollWidth),
+      windowHeight:Math.max(document.documentElement.clientHeight, cardEl.scrollHeight)
     });
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
+    if(!blob) throw new Error("PNG blob 생성 실패");
+    const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
     a.download=`${(state.nickname||"profile").replace(/[\\/:*?"<>|]/g,"_")}_maincard.png`;
-    a.href=canvas.toDataURL("image/png");
+    a.href=url;
+    document.body.appendChild(a);
     a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
   }catch(err){
-    console.error(err); alert("PNG 저장 중 오류가 발생했어요. 다른 브라우저에서 다시 시도해 주세요.");
+    console.error("PNG export failed:",err);
+    alert("PNG 저장에 실패했어요. 페이지를 새로고침한 뒤 다시 시도해 주세요. 계속 실패하면 오류 내용을 알려주세요: " + (err?.message || err));
   }finally{btn.disabled=false;btn.textContent=old;}
 });
 
