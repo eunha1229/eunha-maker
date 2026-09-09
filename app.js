@@ -25,7 +25,12 @@ function bindText(id,key){
   el.addEventListener("input",()=>{ state[key]=el.value; renderPreview(); });
 }
 ["nickname","twitter","tagline","about","notice","cardTitle"].forEach(id=>bindText(id,id));
-$("#fontChoice").addEventListener("change", e=>{state.fontChoice=e.target.value; renderPreview();});
+$("#fontChoice").addEventListener("change", async e=>{
+  state.fontChoice=e.target.value;
+  renderPreview();
+  await ensureSelectedFontReady();
+  renderPreview();
+});
 
 $("#accent1").addEventListener("input", e=>{state.accent1=e.target.value; renderPreview();});
 $("#accent2").addEventListener("input", e=>{state.accent2=e.target.value; renderPreview();});
@@ -84,6 +89,16 @@ function pairHtml(p){
   if(p.type==="card") return `<article class="pair-card"><div class="pair-image-box">${p.image?`<img src="${p.image}" alt="">`:""}</div><div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div></article>`;
   return `<article class="pair-text"><div><div class="pair-name-out">${name}</div></div><div class="pair-desc-out">${desc}</div></article>`;
 }
+async function ensureSelectedFontReady(){
+  const families={
+    "pretendard": '16px "Noto Sans KR"',
+    "noto-sans": '16px "Noto Sans KR"',
+    "gowun": '16px "Gowun Dodum"',
+    "serif": '16px "Noto Serif KR"',
+    "hand": '20px "Nanum Pen Script"'
+  };
+  try{ await document.fonts.load(families[state.fontChoice]||families["pretendard"]); }catch(e){}
+}
 function renderPreview(){
   document.documentElement.style.setProperty("--a1",state.accent1);
   document.documentElement.style.setProperty("--a2",state.accent2);
@@ -106,6 +121,7 @@ function renderPreview(){
 $("#downloadPng").addEventListener("click", async ()=>{
   const btn=$("#downloadPng"), old=btn.textContent; btn.disabled=true; btn.textContent="렌더링 중…";
   try{
+    await ensureSelectedFontReady();
     await document.fonts.ready;
     const canvas=await html2canvas($("#card"),{
       scale:2.5, backgroundColor:null, useCORS:true, logging:false,

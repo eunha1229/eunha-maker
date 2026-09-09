@@ -1,23 +1,20 @@
-# Abyssal Orbit — 메인트 카드 메이커 v2
+# Abyssal Orbit — 메인트 카드 메이커 v3
 
-## v2 변경사항
-- 배경 별 밀도 대폭 증가
-- 우주 + 심해 느낌의 하단 빛무리 강화
-- 상단 `orbit://profile.log` 문구 사용자 수정 가능
-- ABOUT / CAUTION의 LOG 번호 제거
-- PAIR ARCHIVE → JOURNAL
-- 페어 내부 보조 영문 라벨 제거
-- 하단 고정 크레딧 `made by @2by4_JourNey`
-- 글꼴 선택 기능 추가
-  - Pretendard 계열
-  - Noto Sans KR
-  - Gowun Dodum
-  - Noto Serif KR
-  - Nanum Pen Script
-- PNG 저장 / JSON 저장·불러오기 / 페어 3종 기능 유지
+## v3 수정사항
+- 글꼴 선택이 카드 전체에 확실히 적용되도록 수정
+- PNG 저장 전 선택 글꼴 로딩을 다시 확인
+- 별 밀도 증가
+- 작은 점 / 큰 점 / ✦ / ✧ 별을 섞어 형태와 크기를 다양화
+- 페어 배치 개선
+  - 헤더형(대): 항상 한 줄 전체
+  - 카드형(중): 한 줄 최대 2개
+  - 글자 only(소): 한 줄 최대 2개
+- 좌측 편집 패널과 우측 미리보기 영역을 독립 스크롤로 변경
+  - 편집창을 아래까지 내려도 우측 미리보기 위치 유지
+- 모바일에서는 기존처럼 전체 페이지 스크롤 + 페어 1열로 자동 전환
+- 기존 PNG / JSON / 이미지 업로드 기능 유지
 
-## GitHub에서 업데이트하는 가장 쉬운 방법
-기존 저장소에서 `Add file → Upload files`로 들어간 뒤,
-이 v2 폴더의 `index.html`, `styles.css`, `app.js`, `README.md`를 업로드하세요.
-같은 이름의 기존 파일이 있을 경우 GitHub가 변경 파일로 인식합니다.
-맨 아래 `Commit changes`를 누르면 GitHub Pages가 자동으로 다시 배포됩니다.
+## GitHub 업데이트
+압축을 풀고 `index.html`, `styles.css`, `app.js`, `README.md`를
+기존 저장소에 다시 업로드한 뒤 `Commit changes`를 누르면 됩니다.
+GitHub Pages가 잠시 뒤 자동으로 새 버전을 배포합니다.
