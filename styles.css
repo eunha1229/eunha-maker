@@ -91,3 +91,10 @@ linear-gradient(180deg,transparent 45%,color-mix(in srgb,var(--card-bg) 82%,tran
 }
 
 .pair-hero .pair-name-out,.pair-hero .pair-desc-out{text-shadow:0 1px 8px rgba(0,0,0,.55)}
+
+.preset-block{margin:2px 0 14px}
+.preset-label{display:block;color:var(--muted);font-size:12px;margin-bottom:7px}
+.preset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.preset-grid button{border:1px solid var(--line);background:#0e1728;color:var(--text);border-radius:9px;padding:8px 9px;font-size:11px}
+.preset-grid button:hover{border-color:var(--a1);background:color-mix(in srgb,var(--a1) 10%,#0e1728)}
+.preset-grid button.active{border-color:var(--a2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--a2) 30%,transparent)}

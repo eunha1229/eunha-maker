@@ -22,6 +22,74 @@ function readFile(file){
 function esc(s=""){ return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m])); }
 function uid(){ return Math.random().toString(36).slice(2,9); }
 
+
+const themePresets = {
+  abyss: {
+    accent1:"#8098ff",
+    accent2:"#4fd3cf",
+    cardBg:"#07101f",
+    starColor:"#dce8ff"
+  },
+  aurora: {
+    accent1:"#b38cff",
+    accent2:"#6ee7c7",
+    cardBg:"#0c1020",
+    starColor:"#d9fff3"
+  },
+  monochrome: {
+    accent1:"#bfc5cf",
+    accent2:"#8f97a3",
+    cardBg:"#0e1014",
+    starColor:"#e8ebef"
+  },
+  spring: {
+    accent1:"#d8a8d8",
+    accent2:"#b8d9b3",
+    cardBg:"#19141c",
+    starColor:"#fff0f6"
+  },
+  summer: {
+    accent1:"#7db7ff",
+    accent2:"#6fd6c7",
+    cardBg:"#081726",
+    starColor:"#e3f6ff"
+  },
+  autumn: {
+    accent1:"#d28a5d",
+    accent2:"#b79a62",
+    cardBg:"#1b120e",
+    starColor:"#f2dbc1"
+  },
+  winter: {
+    accent1:"#9eb9ff",
+    accent2:"#b7d8ef",
+    cardBg:"#0b1320",
+    starColor:"#f4f8ff"
+  }
+};
+
+function applyPreset(name){
+  const p=themePresets[name];
+  if(!p)return;
+  state.accent1=p.accent1;
+  state.accent2=p.accent2;
+  state.cardBg=p.cardBg;
+  state.starColor=p.starColor;
+
+  $("#accent1").value=p.accent1;
+  $("#accent2").value=p.accent2;
+  $("#cardBg").value=p.cardBg;
+  $("#starColor").value=p.starColor;
+
+  $$(".preset-grid button").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.preset===name);
+  });
+  renderPreview();
+}
+$$("[data-preset]").forEach(btn=>{
+  btn.addEventListener("click",()=>applyPreset(btn.dataset.preset));
+});
+
 function bindText(id,key){
   const el=$("#"+id);
   el.addEventListener("input",()=>{ state[key]=el.value; renderPreview(); });
@@ -38,10 +106,11 @@ $("#fontScale").addEventListener("change", e=>{
   renderPreview();
 });
 
-$("#accent1").addEventListener("input", e=>{state.accent1=e.target.value; renderPreview();});
-$("#accent2").addEventListener("input", e=>{state.accent2=e.target.value; renderPreview();});
-$("#cardBg").addEventListener("input", e=>{state.cardBg=e.target.value; renderPreview();});
-$("#starColor").addEventListener("input", e=>{state.starColor=e.target.value; renderPreview();});
+function clearPresetActive(){ $$(".preset-grid button").forEach(btn=>btn.classList.remove("active")); }
+$("#accent1").addEventListener("input", e=>{state.accent1=e.target.value; clearPresetActive(); renderPreview();});
+$("#accent2").addEventListener("input", e=>{state.accent2=e.target.value; clearPresetActive(); renderPreview();});
+$("#cardBg").addEventListener("input", e=>{state.cardBg=e.target.value; clearPresetActive(); renderPreview();});
+$("#starColor").addEventListener("input", e=>{state.starColor=e.target.value; clearPresetActive(); renderPreview();});
 $("#avatarInput").addEventListener("change", async e=>{
   const f=e.target.files[0]; if(!f)return; state.avatar=await readFile(f); renderPreview();
 });
