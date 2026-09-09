@@ -4,6 +4,7 @@ const $$ = (s, root=document) => [...root.querySelectorAll(s)];
 const state = {
   nickname: "", twitter: "", tagline: "", about: "", notice: "",
   cardTitle: "orbit://profile.log",
+  fontChoice: "pretendard",
   accent1: "#8aa9ff", accent2: "#56d7d1",
   avatar: "", tags: [], pairs: []
 };
@@ -24,6 +25,7 @@ function bindText(id,key){
   el.addEventListener("input",()=>{ state[key]=el.value; renderPreview(); });
 }
 ["nickname","twitter","tagline","about","notice","cardTitle"].forEach(id=>bindText(id,id));
+$("#fontChoice").addEventListener("change", e=>{state.fontChoice=e.target.value; renderPreview();});
 
 $("#accent1").addEventListener("input", e=>{state.accent1=e.target.value; renderPreview();});
 $("#accent2").addEventListener("input", e=>{state.accent2=e.target.value; renderPreview();});
@@ -78,9 +80,9 @@ function renderPairEditor(){
 }
 function pairHtml(p){
   const name=esc(p.name||"PAIR NAME"), desc=esc(p.desc||"페어 설명을 입력해 주세요.");
-  if(p.type==="hero") return `<article class="pair-hero">${p.image?`<img src="${p.image}" alt="">`:""}<div class="pair-copy"><p class="micro">MAJOR CONSTELLATION</p><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div></article>`;
-  if(p.type==="card") return `<article class="pair-card"><div class="pair-image-box">${p.image?`<img src="${p.image}" alt="">`:""}</div><div class="pair-copy"><p class="micro">ORBITAL LINK</p><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div></article>`;
-  return `<article class="pair-text"><div><p class="micro">SIGNAL</p><div class="pair-name-out">${name}</div></div><div class="pair-desc-out">${desc}</div></article>`;
+  if(p.type==="hero") return `<article class="pair-hero">${p.image?`<img src="${p.image}" alt="">`:""}<div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div></article>`;
+  if(p.type==="card") return `<article class="pair-card"><div class="pair-image-box">${p.image?`<img src="${p.image}" alt="">`:""}</div><div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div></article>`;
+  return `<article class="pair-text"><div><div class="pair-name-out">${name}</div></div><div class="pair-desc-out">${desc}</div></article>`;
 }
 function renderPreview(){
   document.documentElement.style.setProperty("--a1",state.accent1);
@@ -91,6 +93,9 @@ function renderPreview(){
   $("#pAbout").textContent=state.about||"소개를 입력해 주세요.";
   $("#pNotice").textContent=state.notice||"주의사항을 입력해 주세요.";
   $("#pCardTitle").textContent=state.cardTitle||"orbit://profile.log";
+  const card=$("#card");
+  [...card.classList].filter(c=>c.startsWith("font-")).forEach(c=>card.classList.remove(c));
+  card.classList.add("font-"+(state.fontChoice||"pretendard"));
   const img=$("#pAvatar"), fb=$("#avatarFallback");
   if(state.avatar){img.src=state.avatar;img.style.display="block";fb.style.display="none";}else{img.removeAttribute("src");img.style.display="none";fb.style.display="grid";}
   $("#pTags").innerHTML=state.tags.map(t=>`<span class="chip">${esc(t)}</span>`).join("");
@@ -128,7 +133,7 @@ $("#importJson").addEventListener("change",async e=>{
   }catch{alert("올바른 작업 파일이 아니에요.");}
 });
 function syncControls(){
-  ["nickname","twitter","tagline","about","notice","cardTitle","accent1","accent2"].forEach(k=>{
+  ["nickname","twitter","tagline","about","notice","cardTitle","fontChoice","accent1","accent2"].forEach(k=>{
     const el=$("#"+k); if(el && state[k]!=null) el.value=state[k];
   });
 }

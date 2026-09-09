@@ -1,29 +1,23 @@
-# Abyssal Orbit — 메인트 카드 메이커
+# Abyssal Orbit — 메인트 카드 메이커 v2
 
-서버 없이 GitHub Pages에서 바로 동작하는 정적 웹사이트 프로토타입입니다.
+## v2 변경사항
+- 배경 별 밀도 대폭 증가
+- 우주 + 심해 느낌의 하단 빛무리 강화
+- 상단 `orbit://profile.log` 문구 사용자 수정 가능
+- ABOUT / CAUTION의 LOG 번호 제거
+- PAIR ARCHIVE → JOURNAL
+- 페어 내부 보조 영문 라벨 제거
+- 하단 고정 크레딧 `made by @2by4_JourNey`
+- 글꼴 선택 기능 추가
+  - Pretendard 계열
+  - Noto Sans KR
+  - Gowun Dodum
+  - Noto Serif KR
+  - Nanum Pen Script
+- PNG 저장 / JSON 저장·불러오기 / 페어 3종 기능 유지
 
-## 들어 있는 기능
-- 실시간 카드 미리보기
-- 프로필 이미지 업로드
-- 태그 추가/삭제
-- 페어 3종
-  - 헤더형(대): 큰 대표 페어
-  - 카드형(중): 이미지 + 이름 + 설명
-  - 글자 only(소): 이름 + 설명
-- 페어 순서 이동 / 삭제
-- 우주 × 심해 계열 테마
-- 포인트 컬러 2종 변경
-- 작업 내용을 JSON으로 저장 / 다시 불러오기
-- 완성 카드를 고해상도 PNG로 저장
-
-## GitHub Pages에 올리기
-1. GitHub에서 새 repository 생성
-2. 이 폴더의 `index.html`, `styles.css`, `app.js` 업로드
-3. repository의 Settings → Pages
-4. Deploy from a branch 선택
-5. Branch `main`, folder `/ (root)` 선택 후 Save
-6. 잠시 뒤 표시되는 GitHub Pages 주소로 접속
-
-## 메모
-PNG 출력은 `html2canvas` CDN을 사용합니다.
-사용자가 직접 업로드한 이미지는 브라우저 내부 data URL로 처리되며 별도 서버에 저장하지 않습니다.
+## GitHub에서 업데이트하는 가장 쉬운 방법
+기존 저장소에서 `Add file → Upload files`로 들어간 뒤,
+이 v2 폴더의 `index.html`, `styles.css`, `app.js`, `README.md`를 업로드하세요.
+같은 이름의 기존 파일이 있을 경우 GitHub가 변경 파일로 인식합니다.
+맨 아래 `Commit changes`를 누르면 GitHub Pages가 자동으로 다시 배포됩니다.

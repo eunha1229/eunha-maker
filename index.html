@@ -63,11 +63,20 @@
 
       <section>
         <h2>테마</h2>
+        <label>상단 로그 문구<input id="cardTitle" value="orbit://profile.log" placeholder="orbit://profile.log"></label>
+        <label>글꼴
+          <select id="fontChoice">
+            <option value="pretendard">깔끔한 고딕 · Pretendard</option>
+            <option value="noto-sans">단정한 고딕 · Noto Sans KR</option>
+            <option value="gowun">부드러운 고딕 · Gowun Dodum</option>
+            <option value="serif">우아한 명조 · Noto Serif KR</option>
+            <option value="hand">손글씨 · Nanum Pen Script</option>
+          </select>
+        </label>
         <div class="theme-grid">
           <label>별빛<input id="accent1" type="color" value="#8aa9ff"></label>
           <label>심해빛<input id="accent2" type="color" value="#56d7d1"></label>
         </div>
-        <label>카드 제목<input id="cardTitle" value="orbit://profile.log"></label>
       </section>
     </aside>
 
@@ -104,11 +113,11 @@
 
         <section class="info-grid">
           <div class="info-box">
-            <p class="section-label">ABOUT / LOG 01</p>
+            <p class="section-label">ABOUT</p>
             <p id="pAbout" class="preline muted">소개를 입력해 주세요.</p>
           </div>
           <div class="info-box">
-            <p class="section-label">CAUTION / LOG 02</p>
+            <p class="section-label">CAUTION</p>
             <p id="pNotice" class="preline muted">주의사항을 입력해 주세요.</p>
           </div>
         </section>
@@ -117,7 +126,7 @@
           <div class="pair-title-row">
             <div>
               <p class="micro">CONSTELLATION / CURRENT LINKS</p>
-              <h3>PAIR ARCHIVE</h3>
+              <h3>JOURNAL</h3>
             </div>
             <span class="orbit-mark">◉</span>
           </div>
@@ -127,6 +136,7 @@
 
         <footer>
           <span>ABYSSAL ORBIT DATABASE</span>
+          <span class="creator-credit">made by @2by4_JourNey</span>
           <span>✦ ｡˚ ◌</span>
         </footer>
       </article>
