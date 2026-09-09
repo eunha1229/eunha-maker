@@ -307,3 +307,32 @@ var(--pair-image-2)
 @media (max-width:560px){
   .visibility-grid{grid-template-columns:1fr;}
 }
+
+
+/* v15 — pair blank slot */
+.pair-spacer{
+  grid-column:span 1;
+  min-width:0;
+  min-height:1px;
+  visibility:hidden;
+  pointer-events:none;
+}
+.pair-edit-item.spacer-editor{
+  padding-bottom:12px;
+}
+.pair-edit-item.spacer-editor .pair-kind::after{
+  content:" · 미리보기에서는 빈 자리만 차지합니다";
+  font-weight:400;
+  opacity:.62;
+  font-size:11px;
+}
+
+/* v16 — spacer must occupy a grid cell without creating visible vertical space */
+.pair-spacer{
+  height:0!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  overflow:hidden!important;
+}
