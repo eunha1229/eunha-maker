@@ -422,3 +422,66 @@ var(--pair-image-2)
   line-height:1.45;
   opacity:.62;
 }
+
+
+/* v24 — profile photo crop/drag only; pair styles unchanged */
+.avatar-photo-frame{
+  position:absolute;
+  left:4px;
+  top:4px;
+  width:104px;
+  height:104px;
+  border-radius:50%;
+  overflow:hidden;
+  background:#081121;
+  z-index:2;
+  touch-action:none;
+  cursor:grab;
+}
+.avatar-photo-frame.avatar-dragging{cursor:grabbing}
+.avatar-photo-frame img#pAvatar{
+  position:absolute!important;
+  display:none;
+  width:auto;
+  height:auto;
+  left:0;
+  top:0;
+  max-width:none!important;
+  max-height:none!important;
+  min-width:0!important;
+  min-height:0!important;
+  object-fit:initial!important;
+  transform:none!important;
+  border-radius:0!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+}
+.avatar-photo-frame #avatarFallback{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#081121;
+  color:var(--a2);
+}
+.avatar-image-adjust{
+  margin-top:10px;
+  padding:10px 11px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:11px;
+  background:rgba(255,255,255,.025);
+}
+.avatar-image-adjust input[type="range"]{
+  width:100%;
+  margin:0;
+}
+.avatar-image-adjust p{
+  margin:6px 0 0;
+  font-size:10px;
+  line-height:1.45;
+  opacity:.62;
+}

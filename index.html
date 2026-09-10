@@ -66,6 +66,14 @@
       <section>
         <h2>프로필 이미지</h2>
         <label class="filebox">이미지 선택<input id="avatarInput" type="file" accept="image/*"></label>
+        <div class="avatar-image-adjust">
+          <div class="pair-adjust-head">
+            <span>이미지 크기</span>
+            <button type="button" class="mini" id="resetAvatarPosition">위치 초기화</button>
+          </div>
+          <input id="avatarZoom" type="range" min="1" max="3" step="0.05" value="1">
+          <p>미리보기의 프로필 사진을 드래그해 위치를 조정할 수 있어요.</p>
+        </div>
       </section>
 
       <section>
@@ -162,8 +170,10 @@
         <section id="pBasic" class="identity">
           <div class="avatar-shell">
             <canvas id="avatarRingCanvas" class="avatar-ring-canvas" width="224" height="224" aria-hidden="true"></canvas>
-            <img id="pAvatar" alt="" />
-            <div id="avatarFallback">✦</div>
+            <div class="avatar-photo-frame">
+              <img id="pAvatar" alt="" />
+              <div id="avatarFallback">✦</div>
+            </div>
           </div>
           <div class="identity-copy">
             <h2 id="pNickname">YOUR NAME</h2>

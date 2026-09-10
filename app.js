@@ -8,7 +8,7 @@ const state = {
   fontScale: "normal",
   accent1: "#8aa9ff", accent2: "#56d7d1",
   cardBg: "#07101f", cardText: "#eef4ff", starColor: "#dce8ff",
-  avatar: "", tags: [], pairs: [],
+  avatar: "", avatarZoom:1, avatarOffsetX:0, avatarOffsetY:0, tags: [], pairs: [],
   showBasic: true, showTags: true, showInfo: true, showPairs: true
 };
 
@@ -123,7 +123,14 @@ $("#cardBg").addEventListener("input", e=>{state.cardBg=e.target.value; clearPre
 $("#cardText").addEventListener("input", e=>{state.cardText=e.target.value; clearPresetActive(); renderPreview();});
 $("#starColor").addEventListener("input", e=>{state.starColor=e.target.value; clearPresetActive(); renderPreview();});
 $("#avatarInput").addEventListener("change", async e=>{
-  const f=e.target.files[0]; if(!f)return; state.avatar=await readFile(f); renderPreview();
+  const f=e.target.files[0];
+  if(!f)return;
+  state.avatar=await readFile(f);
+  state.avatarZoom=1;
+  state.avatarOffsetX=0;
+  state.avatarOffsetY=0;
+  $("#avatarZoom").value="1";
+  renderPreview();
 });
 
 $("#addTag").addEventListener("click", addTag);
@@ -158,6 +165,18 @@ function renderTagEditor(){
   });
 }
 
+$("#avatarZoom").addEventListener("input",e=>{
+  state.avatarZoom=Number(e.target.value);
+  layoutAvatarImage();
+});
+$("#resetAvatarPosition").addEventListener("click",()=>{
+  state.avatarZoom=1;
+  state.avatarOffsetX=0;
+  state.avatarOffsetY=0;
+  $("#avatarZoom").value="1";
+  layoutAvatarImage();
+});
+
 $$("[data-add-pair]").forEach(b=>b.addEventListener("click",()=>addPair(b.dataset.addPair)));
 function addPair(type){
   state.pairs.push({
@@ -170,6 +189,75 @@ function movePair(index,dir){
   const to=index+dir; if(to<0||to>=state.pairs.length)return;
   [state.pairs[index],state.pairs[to]]=[state.pairs[to],state.pairs[index]];
   renderPairEditor(); renderPreview();
+}
+
+
+function normalizeAvatarImageState(){
+  if(typeof state.avatarZoom!=="number" || !Number.isFinite(state.avatarZoom)) state.avatarZoom=1;
+  if(typeof state.avatarOffsetX!=="number" || !Number.isFinite(state.avatarOffsetX)) state.avatarOffsetX=0;
+  if(typeof state.avatarOffsetY!=="number" || !Number.isFinite(state.avatarOffsetY)) state.avatarOffsetY=0;
+  state.avatarZoom=Math.min(3,Math.max(1,state.avatarZoom));
+}
+
+function layoutAvatarImage(){
+  const frame=$(".avatar-photo-frame");
+  const img=$("#pAvatar");
+  if(!frame || !img || !state.avatar || !img.naturalWidth || !img.naturalHeight) return;
+
+  normalizeAvatarImageState();
+  const fw=frame.clientWidth;
+  const fh=frame.clientHeight;
+  if(!fw || !fh) return;
+
+  const nw=img.naturalWidth;
+  const nh=img.naturalHeight;
+  const cover=Math.max(fw/nw,fh/nh);
+  const scale=cover*state.avatarZoom;
+  const rw=nw*scale;
+  const rh=nh*scale;
+
+  const maxX=Math.max(0,(rw-fw)/2);
+  const maxY=Math.max(0,(rh-fh)/2);
+  state.avatarOffsetX=Math.max(-maxX,Math.min(maxX,state.avatarOffsetX));
+  state.avatarOffsetY=Math.max(-maxY,Math.min(maxY,state.avatarOffsetY));
+
+  img.style.width=`${rw}px`;
+  img.style.height=`${rh}px`;
+  img.style.left=`${(fw-rw)/2+state.avatarOffsetX}px`;
+  img.style.top=`${(fh-rh)/2+state.avatarOffsetY}px`;
+}
+
+function bindAvatarDragging(){
+  const frame=$(".avatar-photo-frame");
+  const img=$("#pAvatar");
+  if(!frame || !img || !state.avatar) return;
+
+  frame.onpointerdown=e=>{
+    if(e.button!==undefined && e.button!==0) return;
+    e.preventDefault();
+    const startX=e.clientX;
+    const startY=e.clientY;
+    const startOX=state.avatarOffsetX;
+    const startOY=state.avatarOffsetY;
+    frame.setPointerCapture?.(e.pointerId);
+    frame.classList.add("avatar-dragging");
+
+    const move=ev=>{
+      state.avatarOffsetX=startOX+(ev.clientX-startX);
+      state.avatarOffsetY=startOY+(ev.clientY-startY);
+      layoutAvatarImage();
+    };
+    const up=ev=>{
+      frame.classList.remove("avatar-dragging");
+      frame.removeEventListener("pointermove",move);
+      frame.removeEventListener("pointerup",up);
+      frame.removeEventListener("pointercancel",up);
+      try{frame.releasePointerCapture?.(ev.pointerId)}catch(_){}
+    };
+    frame.addEventListener("pointermove",move);
+    frame.addEventListener("pointerup",up);
+    frame.addEventListener("pointercancel",up);
+  };
 }
 
 function normalizePairImageState(p){
@@ -529,6 +617,8 @@ function renderPreview(){
   $("#emptyPairs").style.display=state.pairs.length?"none":"block";
   drawAvatarRing();
   requestAnimationFrame(()=>{
+    layoutAvatarImage();
+    bindAvatarDragging();
     layoutAllPairImages();
     bindPairImageDragging();
   });
@@ -543,6 +633,7 @@ $("#downloadPng").addEventListener("click", async ()=>{
     setSafeThemeVars();
     drawAvatarRing();
     await ensurePreviewImagesReady();
+    layoutAvatarImage();
     layoutAllPairImages();
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     const rect=cardEl.getBoundingClientRect();
@@ -589,6 +680,7 @@ $("#importJson").addEventListener("change",async e=>{
     ["showBasic","showTags","showInfo","showPairs"].forEach(k=>{
       if(typeof state[k] !== "boolean") state[k]=true;
     });
+    normalizeAvatarImageState();
     if(!Array.isArray(state.pairs)) state.pairs=[];
     state.pairs.forEach(normalizePairImageState);
     syncControls(); renderTagEditor(); renderPairEditor(); renderPreview();
@@ -601,5 +693,7 @@ function syncControls(){
   ["showBasic","showTags","showInfo","showPairs"].forEach(k=>{
     const el=$("#"+k); if(el) el.checked=state[k] !== false;
   });
+  normalizeAvatarImageState();
+  if($("#avatarZoom")) $("#avatarZoom").value=String(state.avatarZoom);
 }
 syncControls();renderTagEditor();renderPairEditor();renderPreview();
