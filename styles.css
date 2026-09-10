@@ -421,3 +421,62 @@ var(--pair-image-2)
   line-height:1.45;
   opacity:.62;
 }
+
+
+/* v19 — refined avatar rings */
+.avatar-shell{
+  width:112px!important;
+  height:112px!important;
+  padding:5px!important;
+  border-radius:50%!important;
+  position:relative!important;
+  box-sizing:border-box!important;
+  background:transparent!important;
+  border:1px solid var(--a1)!important;
+}
+.avatar-shell::before{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border:1px solid var(--a2);
+  border-radius:50%;
+  pointer-events:none;
+  z-index:3;
+  opacity:.9;
+}
+.avatar-outer-ring{
+  position:absolute!important;
+  inset:-10px!important;
+  border:1px solid var(--a1)!important;
+  border-radius:50%!important;
+  opacity:.5!important;
+  pointer-events:none!important;
+  background:transparent!important;
+}
+.avatar-inner{
+  width:100%!important;
+  height:100%!important;
+  border-radius:50%!important;
+  overflow:hidden!important;
+  background:#081121!important;
+  border:0!important;
+  box-sizing:border-box!important;
+}
+.avatar-shell img,
+.avatar-shell #avatarFallback{
+  width:100%!important;
+  height:100%!important;
+  border-radius:50%!important;
+  object-fit:cover!important;
+}
+
+
+/* v19 — ratio-safe pair images rendered as backgrounds */
+.pair-media-frame{
+  background-position:50% 50%;
+  background-repeat:no-repeat!important;
+  background-size:cover;
+}
+.pair-media-frame img{
+  display:none!important;
+}
