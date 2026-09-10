@@ -294,12 +294,14 @@ function pairHtml(p){
   if(p.type==="spacer") return `<div class="pair-spacer" aria-hidden="true"></div>`;
   normalizePairImageState(p);
   const name=esc(p.name||"PAIR NAME"), desc=esc(p.desc||"페어 설명을 입력해 주세요.");
-  const imgStyle=pairImageInlineStyle(p);
+  const imgStyle=`object-position:${p.imageX}% ${p.imageY}%;`;
 
   if(p.type==="hero"){
     return `<article class="pair-hero">
-      <div class="pair-media-frame pair-hero-image" data-pair-id="${esc(p.id)}">
-        ${p.image?`<img class="pair-media-img" src="${p.image}" alt="" draggable="false" style="${imgStyle}">`:""}
+      <div class="pair-media-frame pair-hero-image" data-pair-id="${esc(p.id)}" style="--pair-zoom:${p.imageZoom};">
+        <div class="pair-media-canvas">
+          ${p.image?`<img class="pair-media-img" src="${p.image}" alt="" draggable="false" style="${imgStyle}">`:""}
+        </div>
       </div>
       <div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div>
     </article>`;
@@ -308,8 +310,10 @@ function pairHtml(p){
   if(p.type==="card" || p.type==="card-full"){
     const full=p.type==="card-full" ? " pair-full" : "";
     return `<article class="pair-card${full}">
-      <div class="pair-image-box pair-media-frame" data-pair-id="${esc(p.id)}">
-        ${p.image?`<img class="pair-media-img" src="${p.image}" alt="" draggable="false" style="${imgStyle}">`:""}
+      <div class="pair-image-box pair-media-frame" data-pair-id="${esc(p.id)}" style="--pair-zoom:${p.imageZoom};">
+        <div class="pair-media-canvas">
+          ${p.image?`<img class="pair-media-img" src="${p.image}" alt="" draggable="false" style="${imgStyle}">`:""}
+        </div>
       </div>
       <div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div>
     </article>`;
