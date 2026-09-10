@@ -12,7 +12,7 @@ const state = {
   showBasic: true, showTags: true, showInfo: true, showPairs: true
 };
 
-const typeNames = { hero:"헤더형 · 대", card:"카드형 · 중", text:"글자 only · 소", spacer:"빈칸" };
+const typeNames = { hero:"헤더형 · 대", card:"카드형 · 중", "card-full":"카드형 · 중 · 전체폭", text:"글자 only · 소", "text-full":"글자 only · 소 · 전체폭", spacer:"빈칸" };
 
 function readFile(file){
   return new Promise((resolve,reject)=>{
@@ -177,7 +177,7 @@ function renderPairEditor(){
     $(".pair-kind",item).textContent=typeNames[p.type];
     $(".pair-name",item).value=p.name;
     $(".pair-desc",item).value=p.desc;
-    if(p.type==="text") $(".pair-image-row",item).classList.add("hidden");
+    if(p.type==="text" || p.type==="text-full") $(".pair-image-row",item).classList.add("hidden");
     if(p.type==="spacer"){
       item.classList.add("spacer-editor");
       $$(".pair-name, .pair-desc, .pair-image-row",item).forEach(el=>{
@@ -199,8 +199,14 @@ function pairHtml(p){
   if(p.type==="spacer") return `<div class="pair-spacer" aria-hidden="true"></div>`;
   const name=esc(p.name||"PAIR NAME"), desc=esc(p.desc||"페어 설명을 입력해 주세요.");
   if(p.type==="hero") return `<article class="pair-hero">${p.image?`<img src="${p.image}" alt="">`:""}<div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div></article>`;
-  if(p.type==="card") return `<article class="pair-card"><div class="pair-image-box">${p.image?`<img src="${p.image}" alt="">`:""}</div><div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div></article>`;
-  if(p.type==="text") return `<article class="pair-text"><div><div class="pair-name-out">${name}</div></div><div class="pair-desc-out">${desc}</div></article>`;
+  if(p.type==="card" || p.type==="card-full"){
+    const full=p.type==="card-full" ? " pair-full" : "";
+    return `<article class="pair-card${full}"><div class="pair-image-box">${p.image?`<img src="${p.image}" alt="">`:""}</div><div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div></article>`;
+  }
+  if(p.type==="text" || p.type==="text-full"){
+    const full=p.type==="text-full" ? " pair-full" : "";
+    return `<article class="pair-text${full}"><div><div class="pair-name-out">${name}</div></div><div class="pair-desc-out">${desc}</div></article>`;
+  }
   return `<div class="pair-spacer" aria-hidden="true"></div>`;
 }
 async function ensureSelectedFontReady(){
