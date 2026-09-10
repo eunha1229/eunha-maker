@@ -161,8 +161,11 @@
 
         <section id="pBasic" class="identity">
           <div class="avatar-shell">
-            <img id="pAvatar" alt="" />
-            <div id="avatarFallback">✦</div>
+            <span class="avatar-outer-ring" aria-hidden="true"></span>
+            <div class="avatar-inner">
+              <img id="pAvatar" alt="" />
+              <div id="avatarFallback">✦</div>
+            </div>
           </div>
           <div class="identity-copy">
             <h2 id="pNickname">YOUR NAME</h2>
@@ -234,6 +237,14 @@
       <label>이름<input class="pair-name" placeholder="페어 이름"></label>
       <label>설명<textarea class="pair-desc" rows="3" placeholder="관계 / 소개 / 한마디"></textarea></label>
       <label class="pair-image-row">이미지 <input class="pair-image" type="file" accept="image/*"></label>
+      <div class="pair-image-adjust hidden">
+        <div class="pair-adjust-head">
+          <span>이미지 크기</span>
+          <button type="button" class="mini reset-image-position">위치 초기화</button>
+        </div>
+        <input class="pair-image-zoom" type="range" min="1" max="3" step="0.05" value="1">
+        <p>미리보기의 이미지를 드래그해 위치를 조정할 수 있어요.</p>
+      </div>
     </div>
   </template>
 

@@ -160,7 +160,10 @@ function renderTagEditor(){
 
 $$("[data-add-pair]").forEach(b=>b.addEventListener("click",()=>addPair(b.dataset.addPair)));
 function addPair(type){
-  state.pairs.push({id:uid(),type,name:"",desc:"",image:""});
+  state.pairs.push({
+    id:uid(), type, name:"", desc:"", image:"",
+    imageZoom:1, imageX:50, imageY:50
+  });
   renderPairEditor(); renderPreview();
 }
 function movePair(index,dir){
@@ -168,41 +171,152 @@ function movePair(index,dir){
   [state.pairs[index],state.pairs[to]]=[state.pairs[to],state.pairs[index]];
   renderPairEditor(); renderPreview();
 }
+
+function normalizePairImageState(p){
+  if(typeof p.imageZoom!=="number" || !Number.isFinite(p.imageZoom)) p.imageZoom=1;
+  if(typeof p.imageX!=="number" || !Number.isFinite(p.imageX)) p.imageX=50;
+  if(typeof p.imageY!=="number" || !Number.isFinite(p.imageY)) p.imageY=50;
+  p.imageZoom=Math.min(3,Math.max(1,p.imageZoom));
+  p.imageX=Math.min(100,Math.max(0,p.imageX));
+  p.imageY=Math.min(100,Math.max(0,p.imageY));
+}
+function isImagePair(p){
+  return ["hero","card","card-full"].includes(p.type);
+}
+function pairImageStyle(p){
+  normalizePairImageState(p);
+  return `object-position:${p.imageX}% ${p.imageY}%;transform:scale(${p.imageZoom});`;
+}
+
 function renderPairEditor(){
   const box=$("#pairEditor"), tpl=$("#pairEditorTemplate");
   box.innerHTML="";
   state.pairs.forEach((p,index)=>{
+    normalizePairImageState(p);
     const frag=tpl.content.cloneNode(true);
     const item=$(".pair-edit-item",frag);
-    $(".pair-kind",item).textContent=typeNames[p.type];
-    $(".pair-name",item).value=p.name;
-    $(".pair-desc",item).value=p.desc;
-    if(p.type==="text" || p.type==="text-full") $(".pair-image-row",item).classList.add("hidden");
+    $(".pair-kind",item).textContent=typeNames[p.type] || "빈칸";
+    $(".pair-name",item).value=p.name||"";
+    $(".pair-desc",item).value=p.desc||"";
+
+    const imageRow=$(".pair-image-row",item);
+    const adjust=$(".pair-image-adjust",item);
+    const zoom=$(".pair-image-zoom",item);
+
+    if(p.type==="text" || p.type==="text-full"){
+      imageRow.classList.add("hidden");
+    }else if(isImagePair(p)){
+      adjust.classList.remove("hidden");
+      zoom.value=String(p.imageZoom);
+      zoom.oninput=e=>{
+        p.imageZoom=Number(e.target.value);
+        renderPreview();
+      };
+      $(".reset-image-position",item).onclick=()=>{
+        p.imageZoom=1;
+        p.imageX=50;
+        p.imageY=50;
+        zoom.value="1";
+        renderPreview();
+      };
+    }
+
     if(p.type==="spacer"){
       item.classList.add("spacer-editor");
-      $$(".pair-name, .pair-desc, .pair-image-row",item).forEach(el=>{
+      $$(".pair-name, .pair-desc, .pair-image-row, .pair-image-adjust",item).forEach(el=>{
         const label=el.closest("label");
         if(label) label.classList.add("hidden");
         else el.classList.add("hidden");
       });
     }
+
     $(".pair-name",item).oninput=e=>{p.name=e.target.value;renderPreview();};
     $(".pair-desc",item).oninput=e=>{p.desc=e.target.value;renderPreview();};
-    $(".pair-image",item).onchange=async e=>{const f=e.target.files[0]; if(f){p.image=await readFile(f);renderPreview();}};
-    $(".remove-pair",item).onclick=()=>{state.pairs.splice(index,1);renderPairEditor();renderPreview();};
+    $(".pair-image",item).onchange=async e=>{
+      const f=e.target.files[0];
+      if(f){
+        p.image=await readFile(f);
+        p.imageZoom=1;
+        p.imageX=50;
+        p.imageY=50;
+        renderPreview();
+      }
+    };
+    $(".remove-pair",item).onclick=()=>{
+      state.pairs.splice(index,1);
+      renderPairEditor();
+      renderPreview();
+    };
     $(".move-up",item).onclick=()=>movePair(index,-1);
     $(".move-down",item).onclick=()=>movePair(index,1);
     box.appendChild(frag);
   });
 }
+
+function bindPairImageDragging(){
+  $$(".pair-media-frame[data-pair-id]").forEach(frame=>{
+    const id=frame.dataset.pairId;
+    const p=state.pairs.find(x=>String(x.id)===String(id));
+    if(!p || !p.image || !isImagePair(p)) return;
+
+    frame.onpointerdown=e=>{
+      if(e.button!==undefined && e.button!==0) return;
+      e.preventDefault();
+      const startX=e.clientX, startY=e.clientY;
+      const startPX=p.imageX, startPY=p.imageY;
+      const rect=frame.getBoundingClientRect();
+      frame.setPointerCapture?.(e.pointerId);
+      frame.classList.add("dragging");
+
+      const move=ev=>{
+        const dx=ev.clientX-startX;
+        const dy=ev.clientY-startY;
+        p.imageX=Math.min(100,Math.max(0,startPX + (dx/Math.max(1,rect.width))*100));
+        p.imageY=Math.min(100,Math.max(0,startPY + (dy/Math.max(1,rect.height))*100));
+        const img=$("img",frame);
+        if(img){
+          img.style.objectPosition=`${p.imageX}% ${p.imageY}%`;
+        }
+      };
+      const up=ev=>{
+        frame.classList.remove("dragging");
+        frame.removeEventListener("pointermove",move);
+        frame.removeEventListener("pointerup",up);
+        frame.removeEventListener("pointercancel",up);
+        try{frame.releasePointerCapture?.(ev.pointerId)}catch(_){}
+      };
+      frame.addEventListener("pointermove",move);
+      frame.addEventListener("pointerup",up);
+      frame.addEventListener("pointercancel",up);
+    };
+  });
+}
+
 function pairHtml(p){
   if(p.type==="spacer") return `<div class="pair-spacer" aria-hidden="true"></div>`;
+  normalizePairImageState(p);
   const name=esc(p.name||"PAIR NAME"), desc=esc(p.desc||"페어 설명을 입력해 주세요.");
-  if(p.type==="hero") return `<article class="pair-hero">${p.image?`<img src="${p.image}" alt="">`:""}<div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div></article>`;
+  const style=pairImageStyle(p);
+
+  if(p.type==="hero"){
+    return `<article class="pair-hero">
+      <div class="pair-media-frame pair-hero-image" data-pair-id="${esc(p.id)}">
+        ${p.image?`<img src="${p.image}" alt="" style="${style}">`:""}
+      </div>
+      <div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div>
+    </article>`;
+  }
+
   if(p.type==="card" || p.type==="card-full"){
     const full=p.type==="card-full" ? " pair-full" : "";
-    return `<article class="pair-card${full}"><div class="pair-image-box">${p.image?`<img src="${p.image}" alt="">`:""}</div><div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div></article>`;
+    return `<article class="pair-card${full}">
+      <div class="pair-image-box pair-media-frame" data-pair-id="${esc(p.id)}">
+        ${p.image?`<img src="${p.image}" alt="" style="${style}">`:""}
+      </div>
+      <div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div>
+    </article>`;
   }
+
   if(p.type==="text" || p.type==="text-full"){
     const full=p.type==="text-full" ? " pair-full" : "";
     return `<article class="pair-text${full}"><div><div class="pair-name-out">${name}</div></div><div class="pair-desc-out">${desc}</div></article>`;
@@ -321,6 +435,7 @@ function renderPreview(){
   });
   $("#pPairs").innerHTML=state.pairs.map(pairHtml).join("");
   $("#emptyPairs").style.display=state.pairs.length?"none":"block";
+  bindPairImageDragging();
 }
 
 $("#downloadPng").addEventListener("click", async ()=>{
@@ -374,6 +489,8 @@ $("#importJson").addEventListener("change",async e=>{
     ["showBasic","showTags","showInfo","showPairs"].forEach(k=>{
       if(typeof state[k] !== "boolean") state[k]=true;
     });
+    if(!Array.isArray(state.pairs)) state.pairs=[];
+    state.pairs.forEach(normalizePairImageState);
     syncControls(); renderTagEditor(); renderPairEditor(); renderPreview();
   }catch{alert("올바른 작업 파일이 아니에요.");}
 });
