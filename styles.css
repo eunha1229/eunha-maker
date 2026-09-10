@@ -477,6 +477,102 @@ var(--pair-image-2)
   background-repeat:no-repeat!important;
   background-size:cover;
 }
-.pair-media-frame img{
-  display:none!important;
+
+
+/* v20 — restore original avatar look, keep PNG-safe borders */
+.avatar-shell{
+  width:112px!important;
+  height:112px!important;
+  flex:none!important;
+  border-radius:50%!important;
+  padding:4px!important;
+  background:transparent!important;
+  border:1px solid var(--a1)!important;
+  position:relative!important;
+  box-sizing:border-box!important;
+}
+.avatar-shell::before{
+  content:""!important;
+  position:absolute!important;
+  inset:3px!important;
+  border:1px solid var(--a2)!important;
+  border-radius:50%!important;
+  pointer-events:none!important;
+  z-index:3!important;
+  opacity:.95!important;
+}
+.avatar-shell::after{
+  content:""!important;
+  position:absolute!important;
+  inset:-9px!important;
+  border:1px solid var(--a1)!important;
+  border-radius:50%!important;
+  pointer-events:none!important;
+  opacity:.5!important;
+}
+.avatar-shell > img,
+.avatar-shell > #avatarFallback{
+  display:none;
+  width:100%!important;
+  height:100%!important;
+  border-radius:50%!important;
+  object-fit:cover!important;
+  object-position:50% 50%!important;
+  background:#081121!important;
+  box-sizing:border-box!important;
+}
+.avatar-shell > #avatarFallback{
+  display:grid;
+  place-items:center;
+  font-size:34px;
+  color:var(--a2);
+}
+
+/* v20 — ratio-safe real <img> rendering */
+.pair-media-frame{
+  position:relative!important;
+  overflow:hidden!important;
+  background:linear-gradient(135deg,var(--pair-image-1),var(--pair-image-2))!important;
+  touch-action:none;
+  cursor:grab;
+}
+.pair-media-frame.dragging{cursor:grabbing!important}
+
+.pair-media-frame .pair-media-img{
+  display:block!important;
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  width:calc(100% * var(--pair-zoom,1))!important;
+  height:calc(100% * var(--pair-zoom,1))!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:cover!important;
+  transform:translate(-50%,-50%)!important;
+  transform-origin:center center!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+  pointer-events:none!important;
+}
+
+/* medium image stays square */
+.pair-card{
+  grid-template-columns:125px minmax(0,1fr)!important;
+  min-height:125px!important;
+}
+.pair-card .pair-image-box{
+  width:125px!important;
+  height:125px!important;
+  aspect-ratio:1/1!important;
+  align-self:start!important;
+}
+
+/* hero frame always covers full card */
+.pair-hero-image{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
 }

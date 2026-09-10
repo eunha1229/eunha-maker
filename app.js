@@ -183,34 +183,9 @@ function normalizePairImageState(p){
 function isImagePair(p){
   return ["hero","card","card-full"].includes(p.type);
 }
-function pairBackgroundStyle(p){
+function pairImageInlineStyle(p){
   normalizePairImageState(p);
-  if(!p.image) return "";
-  return `background-image:url("${p.image}");background-position:${p.imageX}% ${p.imageY}%;`;
-}
-
-function applyPairBackgroundSizing(){
-  $$(".pair-media-frame[data-pair-id]").forEach(frame=>{
-    const id=frame.dataset.pairId;
-    const p=state.pairs.find(x=>String(x.id)===String(id));
-    if(!p || !p.image || !isImagePair(p)) return;
-
-    const probe=new Image();
-    probe.onload=()=>{
-      const fw=frame.clientWidth, fh=frame.clientHeight;
-      if(!fw || !fh || !probe.naturalWidth || !probe.naturalHeight) return;
-
-      const coverScale=Math.max(fw/probe.naturalWidth, fh/probe.naturalHeight);
-      const z=Math.max(1, p.imageZoom||1);
-      const rw=probe.naturalWidth*coverScale*z;
-      const rh=probe.naturalHeight*coverScale*z;
-
-      frame.style.backgroundSize=`${rw}px ${rh}px`;
-      frame.style.backgroundPosition=`${p.imageX}% ${p.imageY}%`;
-      frame.style.backgroundRepeat="no-repeat";
-    };
-    probe.src=p.image;
-  });
+  return `object-position:${p.imageX}% ${p.imageY}%;--pair-zoom:${p.imageZoom};`;
 }
 
 function renderPairEditor(){
@@ -298,7 +273,8 @@ function bindPairImageDragging(){
         const dy=ev.clientY-startY;
         p.imageX=Math.min(100,Math.max(0,startPX + (dx/Math.max(1,rect.width))*100));
         p.imageY=Math.min(100,Math.max(0,startPY + (dy/Math.max(1,rect.height))*100));
-        frame.style.backgroundPosition=`${p.imageX}% ${p.imageY}%`;
+        const img=$(".pair-media-img",frame);
+        if(img) img.style.objectPosition=`${p.imageX}% ${p.imageY}%`;
       };
       const up=ev=>{
         frame.classList.remove("dragging");
@@ -318,11 +294,13 @@ function pairHtml(p){
   if(p.type==="spacer") return `<div class="pair-spacer" aria-hidden="true"></div>`;
   normalizePairImageState(p);
   const name=esc(p.name||"PAIR NAME"), desc=esc(p.desc||"페어 설명을 입력해 주세요.");
-  const bgStyle=pairBackgroundStyle(p);
+  const imgStyle=pairImageInlineStyle(p);
 
   if(p.type==="hero"){
     return `<article class="pair-hero">
-      <div class="pair-media-frame pair-hero-image" data-pair-id="${esc(p.id)}" style="${bgStyle}"></div>
+      <div class="pair-media-frame pair-hero-image" data-pair-id="${esc(p.id)}">
+        ${p.image?`<img class="pair-media-img" src="${p.image}" alt="" draggable="false" style="${imgStyle}">`:""}
+      </div>
       <div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div>
     </article>`;
   }
@@ -330,7 +308,9 @@ function pairHtml(p){
   if(p.type==="card" || p.type==="card-full"){
     const full=p.type==="card-full" ? " pair-full" : "";
     return `<article class="pair-card${full}">
-      <div class="pair-image-box pair-media-frame" data-pair-id="${esc(p.id)}" style="${bgStyle}"></div>
+      <div class="pair-image-box pair-media-frame" data-pair-id="${esc(p.id)}">
+        ${p.image?`<img class="pair-media-img" src="${p.image}" alt="" draggable="false" style="${imgStyle}">`:""}
+      </div>
       <div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div>
     </article>`;
   }
@@ -454,7 +434,6 @@ function renderPreview(){
   $("#pPairs").innerHTML=state.pairs.map(pairHtml).join("");
   $("#emptyPairs").style.display=state.pairs.length?"none":"block";
   bindPairImageDragging();
-  requestAnimationFrame(applyPairBackgroundSizing);
 }
 
 $("#downloadPng").addEventListener("click", async ()=>{
@@ -464,7 +443,6 @@ $("#downloadPng").addEventListener("click", async ()=>{
     await document.fonts.ready;
     const cardEl=$("#card");
     setSafeThemeVars();
-    applyPairBackgroundSizing();
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     const rect=cardEl.getBoundingClientRect();
     const captureWidth=Math.ceil(rect.width);
