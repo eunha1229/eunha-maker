@@ -162,7 +162,7 @@ $$("[data-add-pair]").forEach(b=>b.addEventListener("click",()=>addPair(b.datase
 function addPair(type){
   state.pairs.push({
     id:uid(), type, name:"", desc:"", image:"",
-    imageZoom:1, imageX:50, imageY:50
+    imageZoom:1, imageOffsetX:0, imageOffsetY:0
   });
   renderPairEditor(); renderPreview();
 }
@@ -174,39 +174,88 @@ function movePair(index,dir){
 
 function normalizePairImageState(p){
   if(typeof p.imageZoom!=="number" || !Number.isFinite(p.imageZoom)) p.imageZoom=1;
-  if(typeof p.imageX!=="number" || !Number.isFinite(p.imageX)) p.imageX=50;
-  if(typeof p.imageY!=="number" || !Number.isFinite(p.imageY)) p.imageY=50;
+  if(typeof p.imageOffsetX!=="number" || !Number.isFinite(p.imageOffsetX)) p.imageOffsetX=0;
+  if(typeof p.imageOffsetY!=="number" || !Number.isFinite(p.imageOffsetY)) p.imageOffsetY=0;
   p.imageZoom=Math.min(3,Math.max(1,p.imageZoom));
-  p.imageX=Math.min(100,Math.max(0,p.imageX));
-  p.imageY=Math.min(100,Math.max(0,p.imageY));
 }
 function isImagePair(p){
   return ["hero","card","card-full"].includes(p.type);
 }
-function pairImageInlineStyle(p){
-  normalizePairImageState(p);
-  return `object-position:${p.imageX}% ${p.imageY}%;--pair-zoom:${p.imageZoom};`;
+
+function hexRgb(hex){
+  let h=(hex||"#000000").replace("#","");
+  if(h.length===3) h=h.split("").map(x=>x+x).join("");
+  const n=parseInt(h,16);
+  return {
+    r:(n>>16)&255,
+    g:(n>>8)&255,
+    b:n&255
+  };
+}
+function mixRgba(a,b,t,alphaA=1,alphaB=1){
+  return {
+    r:Math.round(a.r+(b.r-a.r)*t),
+    g:Math.round(a.g+(b.g-a.g)*t),
+    b:Math.round(a.b+(b.b-a.b)*t),
+    a:alphaA+(alphaB-alphaA)*t
+  };
+}
+function drawAvatarRing(){
+  const canvas=$("#avatarRingCanvas");
+  if(!canvas) return;
+  const ctx=canvas.getContext("2d");
+  const size=224, cx=112, cy=112, radius=104, line=8;
+  ctx.clearRect(0,0,size,size);
+
+  const a1=hexRgb(state.accent1||"#8aa9ff");
+  const a2=hexRgb(state.accent2||"#56d7d1");
+  const transparent={r:a2.r,g:a2.g,b:a2.b,a:0};
+
+  function colorAt(t){
+    // Reproduce the old: conic-gradient(from 90deg, a1, a2, transparent, a1)
+    if(t<=1/3) return mixRgba(a1,a2,t*3,1,1);
+    if(t<=2/3) return mixRgba(a2,transparent,(t-1/3)*3,1,0);
+    return mixRgba(transparent,a1,(t-2/3)*3,0,1);
+  }
+
+  ctx.lineWidth=line;
+  ctx.lineCap="butt";
+  const steps=360;
+  for(let i=0;i<steps;i++){
+    const t=i/steps;
+    const c=colorAt(t);
+    const start=Math.PI/2 + (Math.PI*2*i/steps);
+    const end=Math.PI/2 + (Math.PI*2*(i+1.7)/steps);
+    ctx.beginPath();
+    ctx.strokeStyle=`rgba(${c.r},${c.g},${c.b},${c.a})`;
+    ctx.arc(cx,cy,radius,start,end);
+    ctx.stroke();
+  }
 }
 
-
-function layoutCoverImage(img, frame, p){
-  if(!img || !frame || !img.naturalWidth || !img.naturalHeight) return;
+function layoutPairImage(frame,p){
+  const img=$(".pair-media-img",frame);
+  if(!img || !img.naturalWidth || !img.naturalHeight) return;
   normalizePairImageState(p);
 
   const fw=frame.clientWidth;
   const fh=frame.clientHeight;
   if(!fw || !fh) return;
 
-  const baseScale=Math.max(fw/img.naturalWidth, fh/img.naturalHeight);
-  const scale=baseScale*p.imageZoom;
-  const rw=img.naturalWidth*scale;
-  const rh=img.naturalHeight*scale;
+  const nw=img.naturalWidth;
+  const nh=img.naturalHeight;
+  const cover=Math.max(fw/nw,fh/nh);
+  const scale=cover*p.imageZoom;
+  const rw=nw*scale;
+  const rh=nh*scale;
 
-  const overflowX=Math.max(0,rw-fw);
-  const overflowY=Math.max(0,rh-fh);
+  const maxX=Math.max(0,(rw-fw)/2);
+  const maxY=Math.max(0,(rh-fh)/2);
+  p.imageOffsetX=Math.max(-maxX,Math.min(maxX,p.imageOffsetX));
+  p.imageOffsetY=Math.max(-maxY,Math.min(maxY,p.imageOffsetY));
 
-  const left=-(overflowX*(p.imageX/100));
-  const top=-(overflowY*(p.imageY/100));
+  const left=(fw-rw)/2+p.imageOffsetX;
+  const top=(fh-rh)/2+p.imageOffsetY;
 
   img.style.width=`${rw}px`;
   img.style.height=`${rh}px`;
@@ -219,39 +268,57 @@ function layoutAllPairImages(){
     const p=state.pairs.find(x=>String(x.id)===String(frame.dataset.pairId));
     const img=$(".pair-media-img",frame);
     if(!p || !img || !p.image) return;
-
-    const apply=()=>layoutCoverImage(img,frame,p);
+    const apply=()=>layoutPairImage(frame,p);
     if(img.complete && img.naturalWidth) apply();
     else img.addEventListener("load",apply,{once:true});
   });
 }
 
-function layoutProfileImage(){
-  const img=$("#pAvatar");
-  const frame=$(".avatar-photo");
-  if(!img || !frame || !state.avatar) return;
+function bindPairImageDragging(){
+  $$(".pair-media-frame[data-pair-id]").forEach(frame=>{
+    const p=state.pairs.find(x=>String(x.id)===String(frame.dataset.pairId));
+    const img=$(".pair-media-img",frame);
+    if(!p || !img || !p.image || !isImagePair(p)) return;
 
-  const apply=()=>{
-    if(!img.naturalWidth || !img.naturalHeight) return;
-    const fw=frame.clientWidth, fh=frame.clientHeight;
-    const scale=Math.max(fw/img.naturalWidth,fh/img.naturalHeight);
-    const rw=img.naturalWidth*scale, rh=img.naturalHeight*scale;
-    img.style.width=`${rw}px`;
-    img.style.height=`${rh}px`;
-    img.style.left=`${(fw-rw)/2}px`;
-    img.style.top=`${(fh-rh)/2}px`;
-  };
-  if(img.complete && img.naturalWidth) apply();
-  else img.addEventListener("load",apply,{once:true});
+    frame.onpointerdown=e=>{
+      if(e.button!==undefined && e.button!==0) return;
+      e.preventDefault();
+      const startX=e.clientX;
+      const startY=e.clientY;
+      const startOX=p.imageOffsetX;
+      const startOY=p.imageOffsetY;
+
+      frame.setPointerCapture?.(e.pointerId);
+      frame.classList.add("dragging");
+
+      const move=ev=>{
+        p.imageOffsetX=startOX+(ev.clientX-startX);
+        p.imageOffsetY=startOY+(ev.clientY-startY);
+        layoutPairImage(frame,p);
+      };
+      const up=ev=>{
+        frame.classList.remove("dragging");
+        frame.removeEventListener("pointermove",move);
+        frame.removeEventListener("pointerup",up);
+        frame.removeEventListener("pointercancel",up);
+        try{frame.releasePointerCapture?.(ev.pointerId)}catch(_){}
+      };
+      frame.addEventListener("pointermove",move);
+      frame.addEventListener("pointerup",up);
+      frame.addEventListener("pointercancel",up);
+    };
+  });
 }
 
-function updateAvatarRingColors(){
-  const a1=state.accent1||"#8aa9ff";
-  const a2=state.accent2||"#56d7d1";
-  const s1=$("#avatarRingA1"), s2=$("#avatarRingA2"), s3=$("#avatarRingA1b");
-  if(s1) s1.setAttribute("stop-color",a1);
-  if(s2) s2.setAttribute("stop-color",a2);
-  if(s3) s3.setAttribute("stop-color",a1);
+async function ensurePreviewImagesReady(){
+  const imgs=$$("#card img");
+  await Promise.all(imgs.map(img=>{
+    if(img.complete && img.naturalWidth) return Promise.resolve();
+    return new Promise(resolve=>{
+      img.addEventListener("load",resolve,{once:true});
+      img.addEventListener("error",resolve,{once:true});
+    });
+  }));
 }
 
 function renderPairEditor(){
@@ -276,14 +343,14 @@ function renderPairEditor(){
       zoom.value=String(p.imageZoom);
       zoom.oninput=e=>{
         p.imageZoom=Number(e.target.value);
-        renderPreview();
+        layoutAllPairImages();
       };
       $(".reset-image-position",item).onclick=()=>{
         p.imageZoom=1;
-        p.imageX=50;
-        p.imageY=50;
+        p.imageOffsetX=0;
+        p.imageOffsetY=0;
         zoom.value="1";
-        renderPreview();
+        layoutAllPairImages();
       };
     }
 
@@ -303,69 +370,18 @@ function renderPairEditor(){
       if(f){
         p.image=await readFile(f);
         p.imageZoom=1;
-        p.imageX=50;
-        p.imageY=50;
+        p.imageOffsetX=0;
+        p.imageOffsetY=0;
         renderPreview();
       }
     };
     $(".remove-pair",item).onclick=()=>{
       state.pairs.splice(index,1);
-      renderPairEditor();
-      renderPreview();
+      renderPairEditor();renderPreview();
     };
     $(".move-up",item).onclick=()=>movePair(index,-1);
     $(".move-down",item).onclick=()=>movePair(index,1);
     box.appendChild(frag);
-  });
-}
-
-function bindPairImageDragging(){
-  $$(".pair-media-frame[data-pair-id]").forEach(frame=>{
-    const id=frame.dataset.pairId;
-    const p=state.pairs.find(x=>String(x.id)===String(id));
-    const img=$(".pair-media-img",frame);
-    if(!p || !img || !p.image || !isImagePair(p)) return;
-
-    frame.onpointerdown=e=>{
-      if(e.button!==undefined && e.button!==0) return;
-      e.preventDefault();
-
-      const startX=e.clientX, startY=e.clientY;
-      const startPX=p.imageX, startPY=p.imageY;
-      const fw=frame.clientWidth, fh=frame.clientHeight;
-      const rw=parseFloat(img.style.width)||img.offsetWidth;
-      const rh=parseFloat(img.style.height)||img.offsetHeight;
-      const overflowX=Math.max(0,rw-fw);
-      const overflowY=Math.max(0,rh-fh);
-
-      frame.setPointerCapture?.(e.pointerId);
-      frame.classList.add("dragging");
-
-      const move=ev=>{
-        const dx=ev.clientX-startX;
-        const dy=ev.clientY-startY;
-
-        if(overflowX>0){
-          p.imageX=Math.min(100,Math.max(0,startPX-(dx/overflowX)*100));
-        }
-        if(overflowY>0){
-          p.imageY=Math.min(100,Math.max(0,startPY-(dy/overflowY)*100));
-        }
-        layoutCoverImage(img,frame,p);
-      };
-
-      const up=ev=>{
-        frame.classList.remove("dragging");
-        frame.removeEventListener("pointermove",move);
-        frame.removeEventListener("pointerup",up);
-        frame.removeEventListener("pointercancel",up);
-        try{frame.releasePointerCapture?.(ev.pointerId)}catch(_){}
-      };
-
-      frame.addEventListener("pointermove",move);
-      frame.addEventListener("pointerup",up);
-      frame.addEventListener("pointercancel",up);
-    };
   });
 }
 
@@ -511,9 +527,8 @@ function renderPreview(){
   });
   $("#pPairs").innerHTML=state.pairs.map(pairHtml).join("");
   $("#emptyPairs").style.display=state.pairs.length?"none":"block";
-  updateAvatarRingColors();
+  drawAvatarRing();
   requestAnimationFrame(()=>{
-    layoutProfileImage();
     layoutAllPairImages();
     bindPairImageDragging();
   });
@@ -526,8 +541,8 @@ $("#downloadPng").addEventListener("click", async ()=>{
     await document.fonts.ready;
     const cardEl=$("#card");
     setSafeThemeVars();
-    updateAvatarRingColors();
-    layoutProfileImage();
+    drawAvatarRing();
+    await ensurePreviewImagesReady();
     layoutAllPairImages();
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     const rect=cardEl.getBoundingClientRect();
