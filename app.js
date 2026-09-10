@@ -188,6 +188,72 @@ function pairImageInlineStyle(p){
   return `object-position:${p.imageX}% ${p.imageY}%;--pair-zoom:${p.imageZoom};`;
 }
 
+
+function layoutCoverImage(img, frame, p){
+  if(!img || !frame || !img.naturalWidth || !img.naturalHeight) return;
+  normalizePairImageState(p);
+
+  const fw=frame.clientWidth;
+  const fh=frame.clientHeight;
+  if(!fw || !fh) return;
+
+  const baseScale=Math.max(fw/img.naturalWidth, fh/img.naturalHeight);
+  const scale=baseScale*p.imageZoom;
+  const rw=img.naturalWidth*scale;
+  const rh=img.naturalHeight*scale;
+
+  const overflowX=Math.max(0,rw-fw);
+  const overflowY=Math.max(0,rh-fh);
+
+  const left=-(overflowX*(p.imageX/100));
+  const top=-(overflowY*(p.imageY/100));
+
+  img.style.width=`${rw}px`;
+  img.style.height=`${rh}px`;
+  img.style.left=`${left}px`;
+  img.style.top=`${top}px`;
+}
+
+function layoutAllPairImages(){
+  $$(".pair-media-frame[data-pair-id]").forEach(frame=>{
+    const p=state.pairs.find(x=>String(x.id)===String(frame.dataset.pairId));
+    const img=$(".pair-media-img",frame);
+    if(!p || !img || !p.image) return;
+
+    const apply=()=>layoutCoverImage(img,frame,p);
+    if(img.complete && img.naturalWidth) apply();
+    else img.addEventListener("load",apply,{once:true});
+  });
+}
+
+function layoutProfileImage(){
+  const img=$("#pAvatar");
+  const frame=$(".avatar-photo");
+  if(!img || !frame || !state.avatar) return;
+
+  const apply=()=>{
+    if(!img.naturalWidth || !img.naturalHeight) return;
+    const fw=frame.clientWidth, fh=frame.clientHeight;
+    const scale=Math.max(fw/img.naturalWidth,fh/img.naturalHeight);
+    const rw=img.naturalWidth*scale, rh=img.naturalHeight*scale;
+    img.style.width=`${rw}px`;
+    img.style.height=`${rh}px`;
+    img.style.left=`${(fw-rw)/2}px`;
+    img.style.top=`${(fh-rh)/2}px`;
+  };
+  if(img.complete && img.naturalWidth) apply();
+  else img.addEventListener("load",apply,{once:true});
+}
+
+function updateAvatarRingColors(){
+  const a1=state.accent1||"#8aa9ff";
+  const a2=state.accent2||"#56d7d1";
+  const s1=$("#avatarRingA1"), s2=$("#avatarRingA2"), s3=$("#avatarRingA1b");
+  if(s1) s1.setAttribute("stop-color",a1);
+  if(s2) s2.setAttribute("stop-color",a2);
+  if(s3) s3.setAttribute("stop-color",a1);
+}
+
 function renderPairEditor(){
   const box=$("#pairEditor"), tpl=$("#pairEditorTemplate");
   box.innerHTML="";
@@ -257,25 +323,37 @@ function bindPairImageDragging(){
   $$(".pair-media-frame[data-pair-id]").forEach(frame=>{
     const id=frame.dataset.pairId;
     const p=state.pairs.find(x=>String(x.id)===String(id));
-    if(!p || !p.image || !isImagePair(p)) return;
+    const img=$(".pair-media-img",frame);
+    if(!p || !img || !p.image || !isImagePair(p)) return;
 
     frame.onpointerdown=e=>{
       if(e.button!==undefined && e.button!==0) return;
       e.preventDefault();
+
       const startX=e.clientX, startY=e.clientY;
       const startPX=p.imageX, startPY=p.imageY;
-      const rect=frame.getBoundingClientRect();
+      const fw=frame.clientWidth, fh=frame.clientHeight;
+      const rw=parseFloat(img.style.width)||img.offsetWidth;
+      const rh=parseFloat(img.style.height)||img.offsetHeight;
+      const overflowX=Math.max(0,rw-fw);
+      const overflowY=Math.max(0,rh-fh);
+
       frame.setPointerCapture?.(e.pointerId);
       frame.classList.add("dragging");
 
       const move=ev=>{
         const dx=ev.clientX-startX;
         const dy=ev.clientY-startY;
-        p.imageX=Math.min(100,Math.max(0,startPX + (dx/Math.max(1,rect.width))*100));
-        p.imageY=Math.min(100,Math.max(0,startPY + (dy/Math.max(1,rect.height))*100));
-        const img=$(".pair-media-img",frame);
-        if(img) img.style.objectPosition=`${p.imageX}% ${p.imageY}%`;
+
+        if(overflowX>0){
+          p.imageX=Math.min(100,Math.max(0,startPX-(dx/overflowX)*100));
+        }
+        if(overflowY>0){
+          p.imageY=Math.min(100,Math.max(0,startPY-(dy/overflowY)*100));
+        }
+        layoutCoverImage(img,frame,p);
       };
+
       const up=ev=>{
         frame.classList.remove("dragging");
         frame.removeEventListener("pointermove",move);
@@ -283,6 +361,7 @@ function bindPairImageDragging(){
         frame.removeEventListener("pointercancel",up);
         try{frame.releasePointerCapture?.(ev.pointerId)}catch(_){}
       };
+
       frame.addEventListener("pointermove",move);
       frame.addEventListener("pointerup",up);
       frame.addEventListener("pointercancel",up);
@@ -294,14 +373,11 @@ function pairHtml(p){
   if(p.type==="spacer") return `<div class="pair-spacer" aria-hidden="true"></div>`;
   normalizePairImageState(p);
   const name=esc(p.name||"PAIR NAME"), desc=esc(p.desc||"페어 설명을 입력해 주세요.");
-  const imgStyle=`object-position:${p.imageX}% ${p.imageY}%;`;
 
   if(p.type==="hero"){
     return `<article class="pair-hero">
-      <div class="pair-media-frame pair-hero-image" data-pair-id="${esc(p.id)}" style="--pair-zoom:${p.imageZoom};">
-        <div class="pair-media-canvas">
-          ${p.image?`<img class="pair-media-img" src="${p.image}" alt="" draggable="false" style="${imgStyle}">`:""}
-        </div>
+      <div class="pair-media-frame pair-hero-image" data-pair-id="${esc(p.id)}">
+        ${p.image?`<img class="pair-media-img" src="${p.image}" alt="" draggable="false">`:""}
       </div>
       <div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div>
     </article>`;
@@ -310,10 +386,8 @@ function pairHtml(p){
   if(p.type==="card" || p.type==="card-full"){
     const full=p.type==="card-full" ? " pair-full" : "";
     return `<article class="pair-card${full}">
-      <div class="pair-image-box pair-media-frame" data-pair-id="${esc(p.id)}" style="--pair-zoom:${p.imageZoom};">
-        <div class="pair-media-canvas">
-          ${p.image?`<img class="pair-media-img" src="${p.image}" alt="" draggable="false" style="${imgStyle}">`:""}
-        </div>
+      <div class="pair-image-box pair-media-frame" data-pair-id="${esc(p.id)}">
+        ${p.image?`<img class="pair-media-img" src="${p.image}" alt="" draggable="false">`:""}
       </div>
       <div class="pair-copy"><div class="pair-name-out">${name}</div><div class="pair-desc-out">${desc}</div></div>
     </article>`;
@@ -437,7 +511,12 @@ function renderPreview(){
   });
   $("#pPairs").innerHTML=state.pairs.map(pairHtml).join("");
   $("#emptyPairs").style.display=state.pairs.length?"none":"block";
-  bindPairImageDragging();
+  updateAvatarRingColors();
+  requestAnimationFrame(()=>{
+    layoutProfileImage();
+    layoutAllPairImages();
+    bindPairImageDragging();
+  });
 }
 
 $("#downloadPng").addEventListener("click", async ()=>{
@@ -447,6 +526,9 @@ $("#downloadPng").addEventListener("click", async ()=>{
     await document.fonts.ready;
     const cardEl=$("#card");
     setSafeThemeVars();
+    updateAvatarRingColors();
+    layoutProfileImage();
+    layoutAllPairImages();
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     const rect=cardEl.getBoundingClientRect();
     const captureWidth=Math.ceil(rect.width);

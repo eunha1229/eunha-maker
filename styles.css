@@ -724,3 +724,121 @@ var(--pair-image-2)
   align-self:stretch!important;
   overflow:hidden!important;
 }
+
+
+/* v22 — original-style avatar ring, PNG-safe SVG version */
+.avatar-shell{
+  width:112px!important;
+  height:112px!important;
+  flex:none!important;
+  border-radius:50%!important;
+  position:relative!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-sizing:border-box!important;
+}
+.avatar-shell::before,
+.avatar-shell::after{
+  content:none!important;
+  display:none!important;
+}
+.avatar-ring-svg{
+  position:absolute!important;
+  inset:0!important;
+  width:112px!important;
+  height:112px!important;
+  overflow:visible!important;
+  z-index:2!important;
+  pointer-events:none!important;
+}
+.avatar-ring-svg::after{display:none!important}
+.avatar-shell::after{display:none!important}
+.avatar-ring-main{
+  vector-effect:non-scaling-stroke;
+}
+.avatar-photo{
+  position:absolute!important;
+  inset:4px!important;
+  width:auto!important;
+  height:auto!important;
+  border-radius:50%!important;
+  overflow:hidden!important;
+  background:#081121!important;
+  border:0!important;
+  z-index:1!important;
+}
+.avatar-photo > img{
+  display:none;
+  position:absolute!important;
+  max-width:none!important;
+  max-height:none!important;
+  min-width:0!important;
+  min-height:0!important;
+  object-fit:initial!important;
+  border-radius:0!important;
+}
+.avatar-photo > #avatarFallback{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  display:grid;
+  place-items:center;
+  border-radius:50%!important;
+  color:var(--a2);
+  background:#081121!important;
+}
+
+/* outer faint orbit, matching old version */
+.avatar-shell .avatar-ring-svg{
+  filter:none!important;
+}
+.avatar-shell{
+  outline:1px solid var(--a1-line)!important;
+  outline-offset:8px!important;
+}
+
+/* v22 — explicit pixel-sized pair images */
+.pair-media-frame{
+  position:relative!important;
+  overflow:hidden!important;
+  padding:0!important;
+  margin:0!important;
+  background:linear-gradient(135deg,var(--pair-image-1),var(--pair-image-2))!important;
+  touch-action:none!important;
+}
+.pair-media-canvas{
+  display:contents!important;
+}
+.pair-media-frame .pair-media-img{
+  display:block!important;
+  position:absolute!important;
+  width:auto;
+  height:auto;
+  max-width:none!important;
+  max-height:none!important;
+  min-width:0!important;
+  min-height:0!important;
+  object-fit:initial!important;
+  transform:none!important;
+  transform-origin:initial!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+}
+.pair-hero .pair-hero-image{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  overflow:hidden!important;
+}
+.pair-card .pair-image-box{
+  width:125px!important;
+  height:125px!important;
+  min-width:125px!important;
+  min-height:125px!important;
+  aspect-ratio:1 / 1!important;
+  overflow:hidden!important;
+}
