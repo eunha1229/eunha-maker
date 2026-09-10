@@ -398,15 +398,31 @@ function bindPairImageDragging(){
   });
 }
 
-async function ensurePreviewImagesReady(){
-  const imgs=$$("#card img");
-  await Promise.all(imgs.map(img=>{
-    if(img.complete && img.naturalWidth) return Promise.resolve();
+async function ensurePreviewImagesReady(timeoutMs=4000){
+  const imgs=$$("#card img").filter(img=>img && img.getAttribute("src"));
+  if(!imgs.length) return;
+
+  const waits=imgs.map(img=>{
+    if(img.complete) return Promise.resolve();
+
     return new Promise(resolve=>{
-      img.addEventListener("load",resolve,{once:true});
-      img.addEventListener("error",resolve,{once:true});
+      let done=false;
+      const finish=()=>{
+        if(done) return;
+        done=true;
+        clearTimeout(timer);
+        img.removeEventListener("load",finish);
+        img.removeEventListener("error",finish);
+        resolve();
+      };
+
+      const timer=setTimeout(finish,timeoutMs);
+      img.addEventListener("load",finish,{once:true});
+      img.addEventListener("error",finish,{once:true});
     });
-  }));
+  });
+
+  await Promise.all(waits);
 }
 
 function renderPairEditor(){
@@ -639,18 +655,24 @@ $("#downloadPng").addEventListener("click", async ()=>{
     const rect=cardEl.getBoundingClientRect();
     const captureWidth=Math.ceil(rect.width);
     const captureHeight=Math.ceil(rect.height);
-    const canvas=await html2canvas(cardEl,{
-      scale:2,
-      backgroundColor:null,
-      useCORS:true,
-      allowTaint:false,
-      logging:false,
-      imageTimeout:15000,
-      width:captureWidth,
-      height:captureHeight,
-      scrollX:0,
-      scrollY:-window.scrollY
-    });
+    const canvas=await Promise.race([
+      html2canvas(cardEl,{
+        scale:2,
+        backgroundColor:null,
+        useCORS:true,
+        allowTaint:false,
+        logging:false,
+        imageTimeout:10000,
+        width:captureWidth,
+        height:captureHeight,
+        scrollX:0,
+        scrollY:-window.scrollY
+      }),
+      new Promise((_,reject)=>setTimeout(
+        ()=>reject(new Error("PNG 렌더링 시간이 너무 오래 걸렸어요.")),
+        15000
+      ))
+    ]);
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
     if(!blob) throw new Error("PNG blob 생성 실패");
     const url=URL.createObjectURL(blob);
